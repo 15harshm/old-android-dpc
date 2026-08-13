@@ -61,10 +61,16 @@ jobs:
         run: dart run tool/flavors/gen_flavors.dart
 
       - name: Fail if generated artifacts are stale
-        run: git diff --exit-code
+        # Scope to the committed codegen outputs only. A bare `git diff` also trips
+        # on pubspec.lock, which `flutter pub get` above can rewrite on CI's Flutter
+        # version — a false "stale" failure unrelated to the flavor source of truth.
+        run: git diff --exit-code android/flavors.gen.json lib/config/flavor_registry.g.dart
 
       - name: Static analysis
-        run: flutter analyze
+        # Fail on real errors/warnings, not on info-level lints. The app uses
+        # print()-based logging throughout (avoid_print) plus some deprecated_member_use;
+        # these are info-level and intentionally non-blocking here.
+        run: flutter analyze --no-fatal-infos
 
   build:
     name: Assemble ${{ matrix.flavor }}
