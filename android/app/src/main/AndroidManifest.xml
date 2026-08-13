@@ -1,0 +1,286 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.renew.jss">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.SET_WALLPAPER"/>
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_NUMBERS" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS"/>
+    <uses-permission android:name="android.permission.READ_SMS"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.USES_POLICY_FORCE_LOCK" />
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+    <uses-permission android:name="android.permission.PREVENT_POWER_KEY" />
+    <uses-permission android:name="android.permission.REORDER_TASKS" />
+    <uses-permission android:name="android.permission.CHANGE_COMPONENT_ENABLED_STATE" />
+    <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_LOCATION_EXTRA_COMMANDS" />
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+    <uses-permission android:name="android.permission.READ_SECURE_SETTINGS" />
+    <uses-permission android:name="android.permission.DEVICE_POWER" />
+    <!-- Normal permission — needed to kill the launcher process after hiding the app
+         icon so that Samsung/OEM launchers pick up the component state change. -->
+    <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
+    <uses-permission android:name="android.permission.BIND_DEVICE_ADMIN" />
+    <uses-permission android:name="android.permission.MANAGE_USERS" />
+    <uses-permission android:name="android.permission.MANAGE_DEVICE_ADMINS" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.MANAGE_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
+    <!-- optional but useful -->
+    <uses-permission android:name="android.permission.USE_CREDENTIALS"/>
+
+
+
+    <application
+        android:label="@string/app_name"
+        android:icon="@mipmap/ic_launcher"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:resizeableActivity="false"
+        android:supportsPictureInPicture="false"
+        >
+
+        <uses-library
+            android:name="org.apache.http.legacy"
+            android:required="false" />
+
+        <!-- MAIN ACTIVITY -->
+        <!-- MainActivity stays enabled always so app doesn't self-close or crash. -->
+        <activity
+            android:name=".activity.MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:excludeFromRecents="true"
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+
+            <meta-data
+                android:name="io.flutter.embedding.android.NormalTheme"
+                android:resource="@style/NormalTheme" />
+
+        </activity>
+
+        <!-- LAUNCHER ALIAS -->
+        <!-- Holds the LAUNCHER category. Disabling LauncherAlias cleanly removes the icon from
+             Samsung One UI / OEM app drawers without disabling MainActivity itself. -->
+        <activity-alias
+            android:name=".LauncherAlias"
+            android:targetActivity=".activity.MainActivity"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity-alias>
+
+        <!-- KIOSK ACTIVITY -->
+        <activity
+            android:name=".activity.KioskActivity"
+            android:exported="true"
+            android:label="Secure Device"
+            android:launchMode="singleTask"
+            android:excludeFromRecents="true"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/KioskTheme"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|screenLayout|uiMode" />
+
+
+        <!-- Removed ProvisioningModeActivity + AdminPolicyComplianceActivity:
+             GET_PROVISIONING_MODE / ADMIN_POLICY_COMPLIANCE are Device Owner managed-provisioning
+             flows that never run on a running DPC (Device Admin activated via Settings). -->
+
+        <!-- LOCK ACTIVITY -->
+        <activity
+            android:name=".activity.LockActivity"
+            android:exported="false"
+            android:label="Secure Device"
+            android:excludeFromRecents="true"
+            android:screenOrientation="portrait"
+            android:taskAffinity=""
+            android:launchMode="singleInstance" />
+
+        <!-- FRP lock shown pre-setup -->
+
+
+        <!-- 🛡️ PERMISSION ENFORCEMENT - Like HR Finance competitor -->
+        <activity
+            android:name=".activity.PermissionEnforcementActivity"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
+            android:excludeFromRecents="true"
+            android:showForAllUsers="true"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:screenOrientation="portrait" />
+
+        <!-- ADMIN RECEIVER -->
+
+        <receiver
+            android:name=".DeviceOwnerReceiver"
+            android:label="@string/app_name"
+            android:permission="android.permission.BIND_DEVICE_ADMIN"
+            android:exported="true"
+            android:directBootAware="true">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_admin" />
+            <!-- Removed supports_transfer_ownership + PROFILE_PROVISIONING_COMPLETE /
+                 DEVICE_OWNER_CHANGED / PROFILE_OWNER_CHANGED actions: Device Owner / Profile Owner
+                 provisioning events that never fire on a Device-Admin-only running DPC. -->
+            <intent-filter android:priority="999">
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- POLICY MONITORING SERVICE -->
+        <service
+            android:name=".service.PolicyMonitoringService"
+            android:enabled="true"
+            android:exported="false"
+            android:stopWithTask="false"
+            android:directBootAware="true"
+            android:foregroundServiceType="specialUse" />
+
+        <receiver
+            android:name=".receivers.ScreenActionReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:directBootAware="true">
+            <intent-filter>
+                <action android:name="android.intent.action.USER_PRESENT" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".receivers.SimChangeReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.SIM_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- ALWAYS ALIVE SERVICE -->
+        <service
+            android:name=".service.AlwaysAliveService"
+            android:enabled="true"
+            android:exported="false"
+            android:directBootAware="true"
+            android:foregroundServiceType="specialUse" />
+
+        <!-- PREVENTIVE SERVICE -->
+        <service
+            android:name=".service.PreventiveService"
+            android:enabled="true"
+            android:exported="false"
+            android:directBootAware="true"
+            android:foregroundServiceType="specialUse" />
+
+        <!-- 🔒 KIOSK ENFORCEMENT SERVICE - Network-Independent Lock Persistence -->
+        <service
+            android:name=".service.KioskEnforcementService"
+            android:enabled="true"
+            android:exported="false"
+            android:stopWithTask="false"
+            android:directBootAware="true"
+            android:foregroundServiceType="specialUse" />
+
+        <!-- BOOT RECEIVER -->
+        <receiver
+            android:name=".receivers.BootReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:directBootAware="true">
+            <intent-filter android:priority="999">
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.PACKAGE_REPLACED" />
+                <action android:name="com.renew.jss.RESTART_SERVICE" />
+            </intent-filter>
+        </receiver>
+
+        <!-- 🎯 MATCH CODEWINT: Uninstall result receiver -->
+        <receiver
+            android:name=".receiver.UninstallResultReceiver"
+            android:exported="true" />
+
+        <receiver
+            android:name=".receiver.SmsCommandReceiver"
+            android:permission="android.permission.BROADCAST_SMS"
+            android:exported="true">
+            <intent-filter android:priority="999">
+                <action android:name="android.provider.Telephony.SMS_RECEIVED"/>
+            </intent-filter>
+        </receiver>
+
+        <!-- 🚀 FCM MESSAGING SERVICE - For socket reconnection on policy updates -->
+        <service
+            android:name=".service.MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- 🔧 ACCESSIBILITY SERVICE - For app monitoring -->
+        <service
+            android:name=".service.MyAccessibilityService"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
+
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
+
+        <!-- 🚨 CRITICAL: Device Admin meta-data at application level (like CodeWint) -->
+        <meta-data
+            android:name="android.app.device_admin"
+            android:resource="@xml/device_admin" />
+
+        <!-- Removed managed_device_provisioning_package meta-data: ownership-transfer /
+             managed provisioning is Device Owner only, unused on a running DPC. -->
+
+    </application>
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.PROCESS_TEXT"/>
+            <data android:mimeType="text/plain"/>
+        </intent>
+    </queries>
+
+</manifest>
+

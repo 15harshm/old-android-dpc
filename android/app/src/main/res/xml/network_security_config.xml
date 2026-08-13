@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Network security configuration for the Running DPC.
+
+    All backend hosts (the PHP /api2 data API and the socket/push server) are
+    served over HTTPS, so cleartext (plain-http) traffic is denied globally.
+    This replaces the blanket android:usesCleartextTraffic="true" that used to
+    sit on the <application> element and closes the MITM exposure it created.
+
+    If a future flavor ever needs a plain-http endpoint, DO NOT re-enable
+    global cleartext. Instead add a scoped exception, e.g.:
+
+        <domain-config cleartextTrafficPermitted="true">
+            <domain includeSubdomains="true">legacy.example.com</domain>
+        </domain-config>
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+</network-security-config>

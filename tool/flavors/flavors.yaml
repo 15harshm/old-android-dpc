@@ -1,0 +1,134 @@
+# =============================================================================
+# SINGLE SOURCE OF TRUTH for every white-label flavor of this DPC.
+#
+# Adding / changing a client = edit ONE entry here, then run:
+#     dart run tool/flavors/gen_flavors.dart
+# (or the guided CLI:  dart run tool/flavors/add_flavor.dart --name ... --id ...)
+#
+# The generator emits two CHECKED-IN artifacts — do NOT hand-edit them:
+#     android/flavors.gen.json          (consumed by android/app/build.gradle.kts)
+#     lib/config/flavor_registry.g.dart (consumed by lib/config/app_config.dart)
+#
+# Each flavor lists ONLY what deviates from `defaults`. applicationId is shared
+# by every flavor (single-install enrollment DPC).
+# =============================================================================
+
+defaults:
+  applicationId: "com.renew.jss"          # single-install DPC; never changes
+  apiBase: "https://{domain}/api2"        # default REST/data API pattern
+  socketBase: "https://socket.{domain}"   # default push / socket server pattern
+  currency: "₹"
+  term: "EMI"
+  usesFastEmiUi: false
+  paymentEnable: false
+  notifyEnrollUpdate: false
+
+flavors:
+  - id: ailocker
+    appName: "AI LOCKER"
+    domain: "ailocker.org"
+    appDescription: "EMI Locker DPC - Required for monitoring app usage and device control"
+    accessibilityDescription: "EMI Locker DPC - Required for monitoring app usage and device control"
+
+  - id: eplocker
+    appName: "EMI PRO LOCKER"
+    domain: "eplocker.com"
+    notifyEnrollUpdate: true
+    appDescription: "EMI PRO Locker DPC - Required for monitoring app usage and device control"
+    accessibilityDescription: "EMI PRO Locker DPC - Required for monitoring app usage and device control"
+
+  - id: myshopmypoint
+    appName: "My Device"
+    domain: "myshopmypoint.com"
+    appDescription: "My Device - Required for monitoring app usage and device control"
+    accessibilityDescription: "My Device DPC - Required for monitoring app usage and device control"
+
+  - id: keygen
+    appName: "KeyGen"
+    domain: "emikeygen.com"
+    appDescription: "KeyGen DPC - Required for monitoring app usage and device control"
+    # Branded 2026-07-08 (previously inherited the generic "My Shop My Point DPC…"
+    # fallback because keygen's old strings.xml never set this key).
+    accessibilityDescription: "KeyGen DPC - Required for monitoring app usage and device control"
+
+  - id: trini
+    appName: "triniMV"
+    domain: "trinimultiventure.com"
+    currency: "GH₵"
+    term: "Installment"
+    appDescription: "trini DPC - Required for monitoring app usage and device control"
+    accessibilityDescription: "trini DPC - Required for monitoring app usage and device control"
+
+  - id: fastemi
+    appName: "FastEMI"
+    domain: "fastemi.org"
+    usesFastEmiUi: true
+    appDescription: "FastEMI DPC - Required for monitoring app usage and device control"
+    accessibilityDescription: "FastEMI DPC - Required for monitoring app usage and device control"
+
+  - id: nexorha
+    appName: "Nexorha Secure Lock"
+    domain: "nexorha.xyz"
+    usesFastEmiUi: true
+    appDescription: "Nexorha Secure Lock DPC - Required for monitoring app usage and device control"
+    accessibilityDescription: "Nexorha DPC - Required for monitoring app usage and device control"
+
+  - id: caapglobal
+    appName: "caapglobal"
+    domain: "caapglobal.com"
+    usesFastEmiUi: true
+    appDescription: "caapglobal DPC - Required for monitoring app usage and device control"
+    accessibilityDescription: "caapglobal DPC - Required for monitoring app usage and device control"
+
+  - id: nexcops
+    appName: "Nexcops"
+    domain: "nexcops.com"
+    usesFastEmiUi: true
+    appDescription: "Nexcops DPC - Required for monitoring app usage and device control"
+    accessibilityDescription: "Nexcops DPC - Required for monitoring app usage and device control"
+
+  - id: emipay
+    appName: "EMI PAY"
+    domain: "emipay24.com"
+    appDescription: "EMI PAY DPC - Required for monitoring app usage and device control"
+    # Branded 2026-07-08 (previously inherited the generic "My Shop My Point DPC…"
+    # fallback because emipay's old strings.xml never set this key).
+    accessibilityDescription: "EMI PAY DPC - Required for monitoring app usage and device control"
+
+  - id: hassnimobile
+    appName: "Hassni Mobile Zone"
+    domain: "admin.skoolx.cloud"
+    # Custom-subdomain client — the only entry that overrides the URL patterns.
+    # (domain reconciled from bare skoolx.cloud; api/socket base compensated.)
+    apiBase: "https://admin.skoolx.cloud/api2"
+    socketBase: "https://socket.skoolx.cloud"
+    currency: "AED"
+    usesFastEmiUi: true
+    appDescription: "Hassni Mobile Zone DPC - Required for monitoring app usage and device control"
+    accessibilityDescription: "Hassni Mobile Zone DPC - Required for monitoring app usage and device control"
+
+  - id: ailocker2
+    appName: "Locker Pro"
+    domain: "ailocker.online"
+    appDescription: "EMI Locker DPC - Required for monitoring app usage and device control"
+    accessibilityDescription: "EMI Locker DPC - Required for monitoring app usage and device control"
+
+  - id: paykist
+    appName: "Paykist"
+    domain: "paykist.com"
+    usesFastEmiUi: true
+    appDescription: "Paykist DPC - Required for monitoring app usage and device control"
+    accessibilityDescription: "Paykist DPC - Required for monitoring app usage and device control"
+
+  - id: rocketsolution
+    appName: "Rocket Solution"
+    domain: "rocketsolution.org"
+    appDescription: "Rocket Solution DPC - Required for monitoring app usage and device control"
+    accessibilityDescription: "Rocket Solution DPC - Required for monitoring app usage and device control"
+
+  - id: shahjalalbd
+    appName: "Shahjalal Locker BD"
+    domain: "shahjalalbd.org"
+    currency: "৳"
+    appDescription: "Shahjalal Locker BD DPC - Required for monitoring app usage and device control"
+    accessibilityDescription: "Shahjalal Locker BD DPC - Required for monitoring app usage and device control"

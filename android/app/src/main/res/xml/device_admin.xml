@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<device-admin xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Removed <support-transfer-ownership/>: ownership transfer is a Device Owner concept,
+         irrelevant for a Device-Admin-only running DPC. -->
+    <uses-policies>
+        <force-lock />
+        <reset-password />
+        <disable-camera />
+        <limit-password />
+        <wipe-data />
+        <!-- 📍 Location control policies for Device Admin -->
+        <disable-keyguard-features />
+        <!-- 🚨 REMOVED INVALID POLICIES -->
+        <!-- <force-encrypt-storage /> -->
+        <!-- <force-erase-storage /> -->
+    </uses-policies>
+</device-admin>
+
+

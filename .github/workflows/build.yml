@@ -1,0 +1,126 @@
+# CI for the white-label Running DPC.
+#
+# Two gates:
+#   1. verify  — regenerate the flavor artifacts and fail if the committed
+#                copies are stale (the source of truth is tool/flavors/flavors.yaml;
+#                android/flavors.gen.json + lib/config/flavor_registry.g.dart are
+#                generated and MUST be committed fresh), then `flutter analyze`.
+#   2. build   — a matrix over all 11 flavors running the Gradle assemble task.
+#                This is the only automated guard that a flavor added to Gradle
+#                (via the registry) actually builds end-to-end.
+#
+# Secrets required (per flavor): each flavor's google-services.json is gitignored,
+# so CI materialises it from a base64-encoded repository secret named
+#   GOOGLE_SERVICES_<flavor>   e.g. GOOGLE_SERVICES_fastemi
+# Create each with:  base64 -w0 android/app/src/<flavor>/google-services.json
+# The Google Services Gradle plugin fails the build if the file is absent.
+#
+# NOTE: the default Flutter .gitignore ignores android/gradlew and
+# gradle-wrapper.jar. The wrapper must be committed (git add -f) for `./gradlew`
+# to exist in a fresh CI checkout.
+
+name: Build & Verify
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: "17"
+  FLUTTER_CHANNEL: "stable"
+
+jobs:
+  verify:
+    name: Verify (codegen fresh + analyze)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Regenerate flavor artifacts
+        run: dart run tool/flavors/gen_flavors.dart
+
+      - name: Fail if generated artifacts are stale
+        run: git diff --exit-code
+
+      - name: Static analysis
+        run: flutter analyze
+
+  build:
+    name: Assemble ${{ matrix.flavor }}
+    needs: verify
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        flavor:
+          - ailocker
+          - eplocker
+          - myshopmypoint
+          - keygen
+          - trini
+          - fastemi
+          - nexorha
+          - caapglobal
+          - nexcops
+          - emipay
+          - hassnimobile
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Regenerate flavor artifacts
+        run: dart run tool/flavors/gen_flavors.dart
+
+      - name: Provision google-services.json from secret
+        env:
+          GS_B64: ${{ secrets[format('GOOGLE_SERVICES_{0}', matrix.flavor)] }}
+        run: |
+          if [ -z "$GS_B64" ]; then
+            echo "::error::Secret GOOGLE_SERVICES_${{ matrix.flavor }} is not set. The Google Services Gradle plugin needs android/app/src/${{ matrix.flavor }}/google-services.json."
+            exit 1
+          fi
+          echo "$GS_B64" | base64 -d > "android/app/src/${{ matrix.flavor }}/google-services.json"
+
+      - name: Assemble debug APK
+        working-directory: android
+        run: |
+          chmod +x ./gradlew
+          f="${{ matrix.flavor }}"
+          cap="$(printf '%s' "${f:0:1}" | tr '[:lower:]' '[:upper:]')${f:1}"
+          ./gradlew ":app:assemble${cap}Debug" --stacktrace

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:padding="28dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@android:color/transparent">
+
+        <TextView
+            android:text="Device verification"
+            android:textSize="20sp"
+            android:textColor="#FFFFFF"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <EditText
+            android:id="@+id/frp_email"
+            android:hint="FRP email"
+            android:inputType="textEmailAddress"
+            android:layout_marginTop="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <EditText
+            android:id="@+id/frp_password"
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:imeOptions="actionGo"
+            android:layout_marginTop="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:id="@+id/frp_submit"
+            android:text="Verify"
+            android:layout_marginTop="12dp"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"/>
+
+        <ProgressBar
+            android:id="@+id/frp_progress"
+            android:visibility="gone"
+            android:layout_marginTop="12dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+</FrameLayout>
+
+

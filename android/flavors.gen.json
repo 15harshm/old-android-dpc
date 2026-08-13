@@ -1,0 +1,137 @@
+[
+  {
+    "id": "ailocker",
+    "appName": "AI LOCKER",
+    "domain": "ailocker.org",
+    "apiBase": "https://ailocker.org/api2",
+    "socketBase": "https://socket.ailocker.org",
+    "appDescription": "EMI Locker DPC - Required for monitoring app usage and device control",
+    "accessibilityDescription": "EMI Locker DPC - Required for monitoring app usage and device control"
+  },
+  {
+    "id": "eplocker",
+    "appName": "EMI PRO LOCKER",
+    "domain": "eplocker.com",
+    "apiBase": "https://eplocker.com/api2",
+    "socketBase": "https://socket.eplocker.com",
+    "appDescription": "EMI PRO Locker DPC - Required for monitoring app usage and device control",
+    "accessibilityDescription": "EMI PRO Locker DPC - Required for monitoring app usage and device control"
+  },
+  {
+    "id": "myshopmypoint",
+    "appName": "My Device",
+    "domain": "myshopmypoint.com",
+    "apiBase": "https://myshopmypoint.com/api2",
+    "socketBase": "https://socket.myshopmypoint.com",
+    "appDescription": "My Device - Required for monitoring app usage and device control",
+    "accessibilityDescription": "My Device DPC - Required for monitoring app usage and device control"
+  },
+  {
+    "id": "keygen",
+    "appName": "KeyGen",
+    "domain": "emikeygen.com",
+    "apiBase": "https://emikeygen.com/api2",
+    "socketBase": "https://socket.emikeygen.com",
+    "appDescription": "KeyGen DPC - Required for monitoring app usage and device control",
+    "accessibilityDescription": "KeyGen DPC - Required for monitoring app usage and device control"
+  },
+  {
+    "id": "trini",
+    "appName": "triniMV",
+    "domain": "trinimultiventure.com",
+    "apiBase": "https://trinimultiventure.com/api2",
+    "socketBase": "https://socket.trinimultiventure.com",
+    "appDescription": "trini DPC - Required for monitoring app usage and device control",
+    "accessibilityDescription": "trini DPC - Required for monitoring app usage and device control"
+  },
+  {
+    "id": "fastemi",
+    "appName": "FastEMI",
+    "domain": "fastemi.org",
+    "apiBase": "https://fastemi.org/api2",
+    "socketBase": "https://socket.fastemi.org",
+    "appDescription": "FastEMI DPC - Required for monitoring app usage and device control",
+    "accessibilityDescription": "FastEMI DPC - Required for monitoring app usage and device control"
+  },
+  {
+    "id": "nexorha",
+    "appName": "Nexorha Secure Lock",
+    "domain": "nexorha.xyz",
+    "apiBase": "https://nexorha.xyz/api2",
+    "socketBase": "https://socket.nexorha.xyz",
+    "appDescription": "Nexorha Secure Lock DPC - Required for monitoring app usage and device control",
+    "accessibilityDescription": "Nexorha DPC - Required for monitoring app usage and device control"
+  },
+  {
+    "id": "caapglobal",
+    "appName": "caapglobal",
+    "domain": "caapglobal.com",
+    "apiBase": "https://caapglobal.com/api2",
+    "socketBase": "https://socket.caapglobal.com",
+    "appDescription": "caapglobal DPC - Required for monitoring app usage and device control",
+    "accessibilityDescription": "caapglobal DPC - Required for monitoring app usage and device control"
+  },
+  {
+    "id": "nexcops",
+    "appName": "Nexcops",
+    "domain": "nexcops.com",
+    "apiBase": "https://nexcops.com/api2",
+    "socketBase": "https://socket.nexcops.com",
+    "appDescription": "Nexcops DPC - Required for monitoring app usage and device control",
+    "accessibilityDescription": "Nexcops DPC - Required for monitoring app usage and device control"
+  },
+  {
+    "id": "emipay",
+    "appName": "EMI PAY",
+    "domain": "emipay24.com",
+    "apiBase": "https://emipay24.com/api2",
+    "socketBase": "https://socket.emipay24.com",
+    "appDescription": "EMI PAY DPC - Required for monitoring app usage and device control",
+    "accessibilityDescription": "EMI PAY DPC - Required for monitoring app usage and device control"
+  },
+  {
+    "id": "hassnimobile",
+    "appName": "Hassni Mobile Zone",
+    "domain": "admin.skoolx.cloud",
+    "apiBase": "https://admin.skoolx.cloud/api2",
+    "socketBase": "https://socket.skoolx.cloud",
+    "appDescription": "Hassni Mobile Zone DPC - Required for monitoring app usage and device control",
+    "accessibilityDescription": "Hassni Mobile Zone DPC - Required for monitoring app usage and device control"
+  },
+  {
+    "id": "ailocker2",
+    "appName": "Locker Pro",
+    "domain": "ailocker.online",
+    "apiBase": "https://ailocker.online/api2",
+    "socketBase": "https://socket.ailocker.online",
+    "appDescription": "EMI Locker DPC - Required for monitoring app usage and device control",
+    "accessibilityDescription": "EMI Locker DPC - Required for monitoring app usage and device control"
+  },
+  {
+    "id": "paykist",
+    "appName": "Paykist",
+    "domain": "paykist.com",
+    "apiBase": "https://paykist.com/api2",
+    "socketBase": "https://socket.paykist.com",
+    "appDescription": "Paykist DPC - Required for monitoring app usage and device control",
+    "accessibilityDescription": "Paykist DPC - Required for monitoring app usage and device control"
+  },
+  {
+    "id": "rocketsolution",
+    "appName": "Rocket Solution",
+    "domain": "rocketsolution.org",
+    "apiBase": "https://rocketsolution.org/api2",
+    "socketBase": "https://socket.rocketsolution.org",
+    "appDescription": "Rocket Solution DPC - Required for monitoring app usage and device control",
+    "accessibilityDescription": "Rocket Solution DPC - Required for monitoring app usage and device control"
+  },
+  {
+    "id": "shahjalalbd",
+    "appName": "Shahjalal Locker BD",
+    "domain": "shahjalalbd.org",
+    "apiBase": "https://shahjalalbd.org/api2",
+    "socketBase": "https://socket.shahjalalbd.org",
+    "appDescription": "Shahjalal Locker BD DPC - Required for monitoring app usage and device control",
+    "accessibilityDescription": "Shahjalal Locker BD DPC - Required for monitoring app usage and device control"
+  }
+]

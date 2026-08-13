@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">My Shop My Point</string>
+    <string name="accessibility_service_description">My Shop My Point DPC - Required for monitoring app usage and device control</string>
+</resources>
+
+
