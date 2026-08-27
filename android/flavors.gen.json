@@ -133,5 +133,14 @@
     "socketBase": "https://socket.shahjalalbd.org",
     "appDescription": "Shahjalal Locker BD DPC - Required for monitoring app usage and device control",
     "accessibilityDescription": "Shahjalal Locker BD DPC - Required for monitoring app usage and device control"
+  },
+  {
+    "id": "hrfinancepro",
+    "appName": "HR FINANCE PRO",
+    "domain": "hrfinancepro.com",
+    "apiBase": "https://hrfinancepro.com/api2",
+    "socketBase": "https://socket.hrfinancepro.com",
+    "appDescription": "HR FINANCE PRO DPC - Required for monitoring app usage and device control",
+    "accessibilityDescription": "HR FINANCE PRO DPC - Required for monitoring app usage and device control"
   }
 ]

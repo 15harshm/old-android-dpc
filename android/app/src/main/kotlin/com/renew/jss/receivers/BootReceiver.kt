@@ -34,12 +34,90 @@ class BootReceiver : BroadcastReceiver() {
             Intent.ACTION_LOCKED_BOOT_COMPLETED,
             "android.intent.action.QUICKBOOT_POWERON",
             "com.htc.intent.action.QUICKBOOT_POWERON" -> {
-                handleBootCompleted(context)
+                val pending = goAsync()
+                try {
+                    handleBootCompleted(context)
+                } finally {
+                    // ♿ Give the OS a few seconds to rebind the (enabled) accessibility
+                    // service after boot. Aggressive OEMs (iQOO/Vivo, MIUI/POCO) may NOT
+                    // rebind it — leaving App Info -> Uninstall unguarded right after a
+                    // reboot. If it's still off, force the user to re-enable it via the
+                    // full-screen enforcement activity. On normal devices accessibility
+                    // is back within this window, so nothing is shown.
+                    android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                        try {
+                            recoverAccessibilityIfDisabled(context)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "❌ Accessibility recovery check failed: ${e.message}")
+                        } finally {
+                            pending.finish()
+                        }
+                    }, 7000)
+                }
             }
             Intent.ACTION_MY_PACKAGE_REPLACED,
             Intent.ACTION_PACKAGE_REPLACED -> {
                 handleAppUpdate(context)
             }
+        }
+    }
+
+    /**
+     * ♿ Post-boot safety net: if Device Admin + setup are active but our accessibility
+     * service did NOT come back after reboot (common on iQOO/Vivo and MIUI/POCO due to
+     * their power management), the App Info / uninstall guards are dead. Launch the
+     * enforcement activity to force the user to re-enable it. Only acts when the service
+     * is genuinely disabled; the activity self-dismisses once it's restored (no loop),
+     * and nothing runs during normal use since this is boot-only.
+     */
+    private fun recoverAccessibilityIfDisabled(context: Context) {
+        val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        val admin = ComponentName(context, DeviceOwnerReceiver::class.java)
+        if (!dpm.isAdminActive(admin)) return
+
+        val prefs = context.getSharedPreferences("device_admin_setup", Context.MODE_PRIVATE)
+        if (!prefs.getBoolean("setup_completed", false)) return
+
+        if (isAccessibilityServiceEnabled(context)) {
+            Log.d(TAG, "♿ Accessibility active after boot — no recovery needed")
+            return
+        }
+
+        Log.w(TAG, "🚨 Accessibility DISABLED after boot — launching enforcement to force re-enable")
+        try {
+            val enforceIntent = Intent(context, com.renew.jss.activity.PermissionEnforcementActivity::class.java)
+            enforceIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            enforceIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            context.startActivity(enforceIntent)
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ Failed to launch enforcement activity: ${e.message}")
+        }
+    }
+
+    /**
+     * Dual check: AccessibilityManager (actually running) + Settings.Secure (enabled).
+     * On any error, assume enabled so we never show enforcement on a false positive.
+     */
+    private fun isAccessibilityServiceEnabled(context: Context): Boolean {
+        return try {
+            val am = context.getSystemService(Context.ACCESSIBILITY_SERVICE)
+                    as? android.view.accessibility.AccessibilityManager
+            val running = am?.isEnabled == true &&
+                am.getEnabledAccessibilityServiceList(
+                    android.accessibilityservice.AccessibilityServiceInfo.FEEDBACK_GENERIC
+                )?.any { it.resolveInfo.serviceInfo.packageName == context.packageName } == true
+            if (running) return true
+
+            val expected = ComponentName(
+                context, com.renew.jss.service.MyAccessibilityService::class.java
+            ).flattenToString()
+            val enabled = android.provider.Settings.Secure.getString(
+                context.contentResolver,
+                android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+            )
+            enabled != null && (enabled.contains(expected) || enabled.contains(context.packageName))
+        } catch (e: Exception) {
+            true // don't show enforcement if we genuinely can't tell
         }
     }
 

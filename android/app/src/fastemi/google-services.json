@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "455969625881",
+    "project_id": "fastemi-4134f",
+    "storage_bucket": "fastemi-4134f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:455969625881:android:15b14f04f9e2f94a71d788",
+        "android_client_info": {
+          "package_name": "com.fast.emi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBPMvAcFuruPnADeph1M7yW1zzsSNoXvGw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:455969625881:android:cb227beefaa5abae71d788",
+        "android_client_info": {
+          "package_name": "com.renew.jss"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBPMvAcFuruPnADeph1M7yW1zzsSNoXvGw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

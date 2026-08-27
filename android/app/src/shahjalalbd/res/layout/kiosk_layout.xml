@@ -1,0 +1,520 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Premium Solid Dark Background -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="#0D0D0D">
+
+        <!-- Top Status Bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_lock_shield"
+                android:tint="#C6F135" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="DEVICE PROTECTED BY SHAHJALAL LOCKER BD"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.1"
+                android:layout_marginStart="12dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔒 LOCKED"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:background="@drawable/locked_badge_background"
+                android:backgroundTint="#EF4444"
+                android:padding="6dp" />
+
+        </LinearLayout>
+
+        <!-- Main Scrollable Content Area -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp"
+                android:gravity="center_horizontal">
+
+                <!-- Lock Icon -->
+                <ImageView
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:src="@drawable/ic_lock_large"
+                    android:tint="#C6F135"
+                    android:layout_marginBottom="20dp" />
+
+                <!-- Device Locked Title -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="DEVICE LOCKED"
+                    android:textColor="#FFFFFF"
+                    android:textSize="26sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.2"
+                    android:layout_marginBottom="6dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Installment Payment Overdue"
+                    android:textColor="#EF4444"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="28dp" />
+
+                <!-- User Details Card -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="8dp"
+                    app:cardBackgroundColor="#FFFFFF">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="24dp">
+
+                        <!-- Customer Name -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="16dp">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/ic_person"
+                                android:tint="#0D0D0D"
+                                android:layout_marginEnd="12dp" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Retailer Name"
+                                    android:textColor="#9CA3AF"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/user_name"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Loading..."
+                                    android:textColor="#0D0D0D"
+                                    android:textSize="16sp"
+                                    android:textStyle="bold" />
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                        <!-- Phone Number -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="16dp">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/ic_phone"
+                                android:tint="#0D0D0D"
+                                android:layout_marginEnd="12dp" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Phone Number"
+                                    android:textColor="#9CA3AF"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/user_phone"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Loading..."
+                                    android:textColor="#0D0D0D"
+                                    android:textSize="16sp"
+                                    android:textStyle="bold" />
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                        <!-- Address -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/ic_location"
+                                android:tint="#0D0D0D"
+                                android:layout_marginEnd="12dp" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Address"
+                                    android:textColor="#9CA3AF"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:id="@+id/user_address"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Loading..."
+                                    android:textColor="#0D0D0D"
+                                    android:textSize="16sp"
+                                    android:textStyle="bold" />
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+                <!-- Payment Photo Card -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="8dp"
+                    app:cardBackgroundColor="#FFFFFF">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="24dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="16dp">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/ic_payment"
+                                android:tint="#0D0D0D"
+                                android:layout_marginEnd="12dp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Payment QR Code"
+                                android:textColor="#0D0D0D"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+
+                        <ImageView
+                            android:id="@+id/payment_photo"
+                            android:layout_width="200dp"
+                            android:layout_height="200dp"
+                            android:layout_gravity="center"
+                            android:scaleType="centerCrop"
+                            android:background="#F5F6FA"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/payment_photo_placeholder"
+                            android:layout_width="match_parent"
+                            android:layout_height="120dp"
+                            android:text="QR Code Loading..."
+                            android:textColor="#6B7280"
+                            android:textSize="14sp"
+                            android:gravity="center"
+                            android:background="#F5F6FA"
+                            android:layout_marginBottom="8dp" />
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+                <!-- Warning Card -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="8dp"
+                    app:cardBackgroundColor="#FFF3F3">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="12dp">
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/ic_warning"
+                                android:tint="#EF4444"
+                                android:layout_marginEnd="12dp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="IMPORTANT NOTICE"
+                                android:textColor="#EF4444"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Your device has been locked due to overdue installment payment. Please contact your retailer to make the payment and unlock your device."
+                            android:textColor="#6B7280"
+                            android:textSize="13sp"
+                            android:lineSpacingExtra="4dp" />
+
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+                <!-- PIN Unlock Card -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="8dp"
+                    app:cardBackgroundColor="#FFFFFF">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Offline PIN Unlock"
+                            android:textColor="#0D0D0D"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="12dp" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center"
+                            android:layout_marginBottom="16dp">
+
+                            <EditText
+                                android:id="@+id/pin_box_1"
+                                android:layout_width="40dp"
+                                android:layout_height="55dp"
+                                android:layout_marginHorizontal="4dp"
+                                android:background="@drawable/otp_box_selector"
+                                android:gravity="center"
+                                android:inputType="numberPassword"
+                                android:maxLength="1"
+                                android:textColor="#0D0D0D"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:focusable="true"
+                                android:focusableInTouchMode="true"
+                                android:clickable="true" />
+                            
+                            <EditText
+                                android:id="@+id/pin_box_2"
+                                android:layout_width="40dp"
+                                android:layout_height="55dp"
+                                android:layout_marginHorizontal="4dp"
+                                android:background="@drawable/otp_box_selector"
+                                android:gravity="center"
+                                android:inputType="numberPassword"
+                                android:maxLength="1"
+                                android:textColor="#0D0D0D"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:focusable="true"
+                                android:focusableInTouchMode="true"
+                                android:clickable="true" />
+                            
+                            <EditText
+                                android:id="@+id/pin_box_3"
+                                android:layout_width="40dp"
+                                android:layout_height="55dp"
+                                android:layout_marginHorizontal="4dp"
+                                android:background="@drawable/otp_box_selector"
+                                android:gravity="center"
+                                android:inputType="numberPassword"
+                                android:maxLength="1"
+                                android:textColor="#0D0D0D"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:focusable="true"
+                                android:focusableInTouchMode="true"
+                                android:clickable="true" />
+                            
+                            <EditText
+                                android:id="@+id/pin_box_4"
+                                android:layout_width="40dp"
+                                android:layout_height="55dp"
+                                android:layout_marginHorizontal="4dp"
+                                android:background="@drawable/otp_box_selector"
+                                android:gravity="center"
+                                android:inputType="numberPassword"
+                                android:maxLength="1"
+                                android:textColor="#0D0D0D"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:focusable="true"
+                                android:focusableInTouchMode="true"
+                                android:clickable="true" />
+                            
+                            <EditText
+                                android:id="@+id/pin_box_5"
+                                android:layout_width="40dp"
+                                android:layout_height="55dp"
+                                android:layout_marginHorizontal="4dp"
+                                android:background="@drawable/otp_box_selector"
+                                android:gravity="center"
+                                android:inputType="numberPassword"
+                                android:maxLength="1"
+                                android:textColor="#0D0D0D"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:focusable="true"
+                                android:focusableInTouchMode="true"
+                                android:clickable="true" />
+                            
+                            <EditText
+                                android:id="@+id/pin_box_6"
+                                android:layout_width="40dp"
+                                android:layout_height="55dp"
+                                android:layout_marginHorizontal="4dp"
+                                android:background="@drawable/otp_box_selector"
+                                android:gravity="center"
+                                android:inputType="numberPassword"
+                                android:maxLength="1"
+                                android:textColor="#0D0D0D"
+                                android:textSize="20sp"
+                                android:textStyle="bold"
+                                android:focusable="true"
+                                android:focusableInTouchMode="true"
+                                android:clickable="true" />
+                        </LinearLayout>
+
+                        <Button
+                            android:id="@+id/unlock_button"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="UNLOCK DEVICE"
+                            android:textColor="#0D0D0D"
+                            android:backgroundTint="#C6F135"
+                            android:textStyle="bold" />
+
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+            </LinearLayout>
+
+        </ScrollView>
+
+        <!-- Bottom Status Bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:gravity="center_vertical"
+            android:background="#0F0F0F">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="🛡️ Shahjalal Locker BD Device Security"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:gravity="center" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="v2.5"
+                android:textColor="#4B5563"
+                android:textSize="10sp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</FrameLayout>

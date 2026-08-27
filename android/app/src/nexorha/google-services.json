@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "725427470489",
+    "project_id": "nexorha-a8cf0",
+    "storage_bucket": "nexorha-a8cf0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:725427470489:android:3b96f6a33df3e3159f7808",
+        "android_client_info": {
+          "package_name": "com.renew.jss"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxgBUzlpYWOVjbpxuxHimD7crt8RUMoNI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

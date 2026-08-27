@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1063430002745",
+    "project_id": "emipay-24",
+    "storage_bucket": "emipay-24.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1063430002745:android:7e2c757ca7deee13d915e8",
+        "android_client_info": {
+          "package_name": "com.renew.jss"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCVm8cZv9ShK2rShYvj1V-CmPSn9kpCycc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

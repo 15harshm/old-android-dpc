@@ -162,12 +162,13 @@ app.*.symbols
 # Release signing secrets — read by build.gradle.kts, never committed.
 android/app/keystore.properties
 
-# Per-flavor Firebase config. Provided at build time (CI secret / local dev),
-# never committed. The generator scaffolds a google-services.PLACEHOLDER.json
-# marker instead; the real file is dropped in per client.
-**/google-services.json
+# Per-flavor Firebase config (google-services.json): intentionally COMMITTED to
+# this PRIVATE repo so CI/local builds work without per-flavor secrets. These are
+# client-side Firebase identifiers (already embedded in the shipped APK), not
+# private keys. If this repo is ever made public, re-ignore them and switch CI
+# back to the GOOGLE_SERVICES_<flavor> secret mechanism.
 
-# Firebase Admin SDK service-account keys (server-side credentials).
+# Firebase Admin SDK service-account keys (server-side PRIVATE keys) — stay OUT.
 **/*firebase-adminsdk*.json
 
 # Kotlin incremental-compile error logs (thousands of build-noise files).

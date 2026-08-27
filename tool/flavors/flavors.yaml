@@ -130,5 +130,13 @@ flavors:
     appName: "Shahjalal Locker BD"
     domain: "shahjalalbd.org"
     currency: "৳"
+    usesFastEmiUi: true
     appDescription: "Shahjalal Locker BD DPC - Required for monitoring app usage and device control"
     accessibilityDescription: "Shahjalal Locker BD DPC - Required for monitoring app usage and device control"
+
+  - id: hrfinancepro
+    appName: "HR FINANCE PRO"
+    domain: "hrfinancepro.com"
+    usesFastEmiUi: true
+    appDescription: "HR FINANCE PRO DPC - Required for monitoring app usage and device control"
+    accessibilityDescription: "HR FINANCE PRO DPC - Required for monitoring app usage and device control"

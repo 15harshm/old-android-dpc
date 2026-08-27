@@ -146,8 +146,23 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                 );
                 return;
               }
-              final pendingEmi = widget.deviceInfo?['pendingEmi'] ?? 0;
-              print('🔍 DEBUG: pendingEmi = $pendingEmi');
+              final pendingEmi = int.tryParse(widget.deviceInfo?['pendingEmi']?.toString() ?? '0') ?? 0;
+              final totalEmi = int.tryParse(widget.deviceInfo?['totalEmi']?.toString() ?? '0') ?? 0;
+              print('🔍 DEBUG: pendingEmi = $pendingEmi, totalEmi = $totalEmi');
+              // 🛡️ EMI must be PRESENT and fully paid before removal is allowed.
+              // Edge case: some clients enroll customers with NO EMI schedule, so
+              // total & pending both come back 0 — that used to satisfy the
+              // "nothing pending" check and wrongly allowed removal. Block unless an
+              // EMI schedule actually exists (totalEmi > 0).
+              if (totalEmi <= 0) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Cannot remove restrictions: no ${AppConfig.paymentTerm} details found'),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+                return;
+              }
               if (pendingEmi > 0) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -448,8 +463,18 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                                       );
                                       return;
                                     }
-                                    final pendingEmi = widget.deviceInfo?['pendingEmi'] ?? 0;
-                                    if (pendingEmi > 0) {
+                                    final pendingEmi = int.tryParse(widget.deviceInfo?['pendingEmi']?.toString() ?? '0') ?? 0;
+                                    final totalEmi = int.tryParse(widget.deviceInfo?['totalEmi']?.toString() ?? '0') ?? 0;
+                                    // 🛡️ Require an EMI schedule to exist (totalEmi > 0)
+                                    // before allowing removal — see the app-bar button.
+                                    if (totalEmi <= 0) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Cannot remove restrictions: no ${AppConfig.paymentTerm} details found'),
+                                          backgroundColor: Colors.orange,
+                                        ),
+                                      );
+                                    } else if (pendingEmi > 0) {
                                     _showOverdueDialog(context, pendingEmi);
                                   } else {
                                     _showConfirmUninstallDialog(context);

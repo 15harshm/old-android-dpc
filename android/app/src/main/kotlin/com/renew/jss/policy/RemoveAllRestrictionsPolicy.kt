@@ -71,10 +71,13 @@ object RemoveAllRestrictionsPolicy {
                 Log.w(TAG, "Failed to disable location: ${e.message}")
             }
 
-            // 🔓 Remove wallpaper
+            // 🔓 Remove wallpaper. The flavor-specific "don't wipe the customer's own
+            // wallpaper" behavior lives inside WallpaperPolicy.unset() (preserve
+            // clients like nexorha no-op when no DPC wallpaper was set); every other
+            // client clears to default here exactly as before.
             try {
                 WallpaperPolicy.unset(context)
-                Log.d(TAG, "🖼️ Wallpaper removed")
+                Log.d(TAG, "🖼️ Wallpaper unset requested")
             } catch (e: Exception) {
                 Log.w(TAG, "Failed to remove wallpaper: ${e.message}")
             }

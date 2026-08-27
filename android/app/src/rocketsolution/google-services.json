@@ -1,0 +1,86 @@
+{
+  "project_info": {
+    "project_number": "327603011984",
+    "project_id": "hmdm-2e5f2",
+    "storage_bucket": "hmdm-2e5f2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:327603011984:android:fb8329029a67434c823315",
+        "android_client_info": {
+          "package_name": "com.airwatch.androidagent"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRO6rCz2aSHEEJtZrCQ3oG2ICzsyYuYVc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:327603011984:android:2ec3d40f9be09d9f823315",
+        "android_client_info": {
+          "package_name": "com.famoc.baseAgent"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRO6rCz2aSHEEJtZrCQ3oG2ICzsyYuYVc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:327603011984:android:eead20f124198fd4823315",
+        "android_client_info": {
+          "package_name": "com.hmdm.launcher"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRO6rCz2aSHEEJtZrCQ3oG2ICzsyYuYVc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:327603011984:android:b0e910a50169852a823315",
+        "android_client_info": {
+          "package_name": "com.renew.jss"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRO6rCz2aSHEEJtZrCQ3oG2ICzsyYuYVc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

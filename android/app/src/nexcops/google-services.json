@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "583166446301",
+    "project_id": "nexcops-22c05",
+    "storage_bucket": "nexcops-22c05.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:583166446301:android:1e6c6f241be85b0ef9e934",
+        "android_client_info": {
+          "package_name": "com.renew.jss"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8djgrdujApHFsPV88xGsPWeZwH0r_TP0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

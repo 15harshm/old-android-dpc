@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "101396597397",
+    "project_id": "hr-finance-pro--emi",
+    "storage_bucket": "hr-finance-pro--emi.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:101396597397:android:16f34d341acec92175699c",
+        "android_client_info": {
+          "package_name": "com.renew.jss"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkix6KbbNzQLCxWexZixrlWxkklIgqLvk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

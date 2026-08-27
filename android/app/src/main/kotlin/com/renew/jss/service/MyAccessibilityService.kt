@@ -60,6 +60,23 @@ class MyAccessibilityService : AccessibilityService() {
     // startForegroundService batch â†’ floods the main thread message queue â†’ ANR.
     @Volatile private var watchdogPending = false
 
+    // 🛡️ System package-installer packages (OEM variants). Their "Uninstall this
+    // app?" / "Deactivate & uninstall?" confirm dialog is a SEPARATE package from
+    // Settings — see the uninstall guard in onAccessibilityEvent.
+    private val packageInstallerPackages = setOf(
+        "com.android.packageinstaller",
+        "com.google.android.packageinstaller",
+        "com.miui.packageinstaller",
+        "com.samsung.android.packageinstaller",
+        "com.oplus.packageinstaller",
+        "com.vivo.packageinstaller"
+    )
+
+    // Timestamp of the last time OUR app's App Info / permission screen was seen.
+    // Lets the uninstall guard catch the confirm dialog that opens right after it,
+    // even when that system dialog doesn't spell out our app name.
+    @Volatile private var lastOurAppInfoSeen = 0L
+
     private fun isSetupCompleted(): Boolean {
         return try {
             val prefs = getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
@@ -119,6 +136,31 @@ class MyAccessibilityService : AccessibilityService() {
             val text = eventTextList.joinToString(" ")
             val contentDescription = event.contentDescription?.toString() ?: ""
 
+            // 🛡️ UNINSTALL GUARD — the system package installer is a SEPARATE
+            // package from Settings; its "Uninstall this app?" / "Deactivate &
+            // uninstall?" confirm dialog used to be unmonitored, leaving the race
+            // where a user could confirm before we reacted. We act ONLY when the
+            // dialog concerns OUR app — matched by our (per-flavor) app label, by
+            // our package com.renew.jss, or because it opened moments after our own
+            // App Info screen. Uninstalling ANY OTHER app is untouched, so there is
+            // no abnormality during normal phone use.
+            if (packageName in packageInstallerPackages) {
+                val appLabel = applicationContext.applicationInfo.loadLabel(packageManager).toString()
+                val sourceNode = event.source
+                val refersToOurApp = text.contains(appLabel, ignoreCase = true) ||
+                    contentDescription.contains(appLabel, ignoreCase = true) ||
+                    nodeContainsText(sourceNode, appLabel) ||
+                    nodeContainsText(sourceNode, "com.renew.jss")
+                val rightAfterOurAppInfo =
+                    System.currentTimeMillis() - lastOurAppInfoSeen < 4000L
+                if (refersToOurApp || rightAfterOurAppInfo) {
+                    Log.w("Accessibility", "🚫 Blocked uninstall/deactivate dialog for our app [$packageName]")
+                    performGlobalAction(GLOBAL_ACTION_BACK)
+                    performGlobalAction(GLOBAL_ACTION_HOME)
+                    return
+                }
+            }
+
             // 1. Play Store checks (only block if user is trying to uninstall or manage apps)
             if (packageName == "com.android.vending") {
                 if (text.contains("Manage apps", ignoreCase = true) || text.contains("My apps", ignoreCase = true)) {
@@ -140,9 +182,12 @@ class MyAccessibilityService : AccessibilityService() {
             val settingsPackages = setOf(
                 "com.android.settings",                  // Standard Settings
                 "com.samsung.android.settings",          // Samsung Settings
+                "com.samsung.accessibility",             // Samsung dedicated Accessibility package
+                "com.samsung.android.accessibility",     // Samsung Accessibility (variant)
                 "com.google.android.settings.intelligence", // Settings Intelligence
                 "com.google.android.permissioncontroller", // Permission Controller
                 "com.miui.securitycenter",               // Xiaomi Security Center
+                "com.miui.appmanager",                   // Xiaomi/POCO/Redmi App manager (App info screen)
                 "com.coloros.safecenter",                // Oppo Phone Manager
                 "com.oppo.safe",                         // Older Oppo
                 "com.oplus.notificationmanager",         // Oppo Notification Manager
@@ -183,6 +228,35 @@ class MyAccessibilityService : AccessibilityService() {
 
             if (packageName in settingsPackages) {
 
+                // 🛡️ ACCESSIBILITY SETTINGS GUARD — the ENTIRE DPC depends on this
+                // service staying enabled. Once the user disables it we receive no
+                // more events and cannot react (a Device Admin, unlike a Device
+                // Owner, cannot re-enable its own accessibility service). So we must
+                // block the Accessibility screens BEFORE the on/off toggle is
+                // reachable. Detect by the settings screen's own class/title — which
+                // is reliable at the FIRST window event — and eject hard (BACK+HOME),
+                // not to the settings home where the user can just walk back in.
+                // The Accessibility LIST is the choke point: block it and the
+                // per-service toggle is unreachable.
+                // Detection is LANGUAGE-INDEPENDENT: package + class names stay in
+                // English even when the phone UI is localized (Bengali/Hindi/…),
+                // unlike the on-screen title. This is why the old title/name check
+                // failed on real devices. Stock + most OEMs host Accessibility in
+                // com.android.settings.accessibility.* activity classes; Samsung uses
+                // its own com.samsung.accessibility package. The English-title check
+                // is kept only as an extra net for stock-English devices.
+                val isAccessibilityScreen =
+                    packageName.contains("accessibility", ignoreCase = true) ||
+                    className.contains("accessibility", ignoreCase = true) ||
+                    (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED &&
+                        text.contains("Accessibility", ignoreCase = true))
+                if (isAccessibilityScreen) {
+                    Log.w("Accessibility", "🚫 Blocked Accessibility settings screen [$packageName / $className]")
+                    performGlobalAction(GLOBAL_ACTION_BACK)
+                    performGlobalAction(GLOBAL_ACTION_HOME)
+                    return
+                }
+
                 // Developer options
                 if (text.contains("Developer", ignoreCase = true) ||
                     contentDescription.contains("Developer", ignoreCase = true) ||
@@ -214,17 +288,38 @@ class MyAccessibilityService : AccessibilityService() {
                     return
                 }
 
-                // Accessibility Settings for OUR APP
+                // Our app name on any Settings screen — the LAST line of defence.
+                // The per-service accessibility TOGGLE screen shows our app name as
+                // its title (locale-independent, since our brand name isn't
+                // translated), so this catches the on/off switch page even when the
+                // package/class guard above missed it (e.g. SubSettings-hosted on a
+                // localized device). Also covers App Info / per-app notification /
+                // battery pages — all routes that lead to disabling or uninstalling
+                // us. Eject HARD (not to Settings home, where the user just walks
+                // back), and arm the uninstall guard in case this is our App Info.
                 val friendlyAppName = getString(com.renew.jss.R.string.app_name)
-                if (text.contains(friendlyAppName, ignoreCase = true)) {
-                    Log.d("Accessibility", "ðŸŸ¢ Accessibility Settings opened for our app!")
-                    blockAction()
+                val isWindowState = event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+                if (text.contains(friendlyAppName, ignoreCase = true) ||
+                    contentDescription.contains(friendlyAppName, ignoreCase = true) ||
+                    (isWindowState && nodeContainsText(event.source, friendlyAppName))) {
+                    Log.w("Accessibility", "🚫 Settings screen referencing our app — ejecting [$className]")
+                    lastOurAppInfoSeen = System.currentTimeMillis()
+                    performGlobalAction(GLOBAL_ACTION_BACK)
+                    performGlobalAction(GLOBAL_ACTION_HOME)
                     return
                 }
 
-                // App Info screen for OUR APP
+                // App Info screen for OUR APP. Cover OEM variants by class name
+                // (class names stay in English on every locale, unlike the title):
+                //  - stock/most OEMs: AppInfoDashboard*, InstalledAppDetails*
+                //  - MIUI / POCO / Redmi: com.miui.appmanager.ApplicationsDetailsActivity
+                //  - misc OEM app-detail activities: *AppDetail*
                 val isAppInfoClass = className.contains("AppInfo", ignoreCase = true) ||
                                      className.contains("InstalledAppDetails", ignoreCase = true) ||
+                                     className.contains("ApplicationsDetails", ignoreCase = true) ||  // MIUI/POCO
+                                     className.contains("appmanager", ignoreCase = true) ||           // MIUI app manager
+                                     className.contains("AppManager", ignoreCase = true) ||
+                                     className.contains("AppDetail", ignoreCase = true) ||            // generic OEM
                                      text.contains("app info", ignoreCase = true) ||
                                      text.contains("permission", ignoreCase = true)
                 if (isAppInfoClass) {
@@ -235,6 +330,9 @@ class MyAccessibilityService : AccessibilityService() {
                                    text.contains("com.renew.jss", ignoreCase = true)
                     if (isOurApp) {
                         Log.d("Accessibility", "âœ… User opened App Info screen of OUR APP!")
+                        // Arm the uninstall guard: if a package-installer confirm
+                        // dialog appears in the next few seconds, it's ours -> block.
+                        lastOurAppInfoSeen = System.currentTimeMillis()
                         blockActionBack()
                         return
                     }

@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "652413533237",
+    "project_id": "caap-global",
+    "storage_bucket": "caap-global.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:652413533237:android:8dc2d718acd4b48ee3057c",
+        "android_client_info": {
+          "package_name": "com.caap.global"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpZcHOa4X2Www9fKpMAlvrbudVQVYa3SE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:652413533237:android:80c800b993c5aa0ce3057c",
+        "android_client_info": {
+          "package_name": "com.renew.jss"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpZcHOa4X2Www9fKpMAlvrbudVQVYa3SE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

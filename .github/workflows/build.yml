@@ -5,7 +5,7 @@
 #                copies are stale (the source of truth is tool/flavors/flavors.yaml;
 #                android/flavors.gen.json + lib/config/flavor_registry.g.dart are
 #                generated and MUST be committed fresh), then `flutter analyze`.
-#   2. build   — a matrix over all 11 flavors running the Gradle assemble task.
+#   2. build   — a matrix over all 16 flavors running the Gradle assemble task.
 #                This is the only automated guard that a flavor added to Gradle
 #                (via the registry) actually builds end-to-end.
 #
@@ -91,6 +91,11 @@ jobs:
           - nexcops
           - emipay
           - hassnimobile
+          - ailocker2
+          - paykist
+          - rocketsolution
+          - shahjalalbd
+          - hrfinancepro
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -113,15 +118,20 @@ jobs:
       - name: Regenerate flavor artifacts
         run: dart run tool/flavors/gen_flavors.dart
 
-      - name: Provision google-services.json from secret
+      - name: Ensure google-services.json is present
         env:
           GS_B64: ${{ secrets[format('GOOGLE_SERVICES_{0}', matrix.flavor)] }}
         run: |
-          if [ -z "$GS_B64" ]; then
-            echo "::error::Secret GOOGLE_SERVICES_${{ matrix.flavor }} is not set. The Google Services Gradle plugin needs android/app/src/${{ matrix.flavor }}/google-services.json."
+          f="android/app/src/${{ matrix.flavor }}/google-services.json"
+          if [ -f "$f" ]; then
+            echo "Using committed $f"
+          elif [ -n "$GS_B64" ]; then
+            echo "$GS_B64" | base64 -d > "$f"
+            echo "Wrote $f from GOOGLE_SERVICES_${{ matrix.flavor }} secret"
+          else
+            echo "::error::No committed $f and no GOOGLE_SERVICES_${{ matrix.flavor }} secret. The Google Services Gradle plugin needs this file."
             exit 1
           fi
-          echo "$GS_B64" | base64 -d > "android/app/src/${{ matrix.flavor }}/google-services.json"
 
       - name: Assemble debug APK
         working-directory: android
