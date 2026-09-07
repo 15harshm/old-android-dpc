@@ -240,7 +240,13 @@ class PolicyMonitoringService : Service() {
                 Log.d(TAG, "FCMPC â™¿ Processing DISABLE_ACCESSIBILITY command from FCM")
                 handleDisableAccessibilityCommand()
             }
-            
+
+            intent?.getBooleanExtra("enable_accessibility_command", false) == true -> {
+                // â™¿ Enable accessibility command
+                Log.d(TAG, "FCMPC â™¿ Processing ENABLE_ACCESSIBILITY command from FCM")
+                handleEnableAccessibilityCommand()
+            }
+
             else -> {
                 // Normal service startup - FCM only
                 // âœ… ANR FIX: Only reapply policies if this is a FRESH start (not a sticky restart).
@@ -496,6 +502,24 @@ class PolicyMonitoringService : Service() {
             Log.d(TAG, "FCMPC â™¿ Accessibility service disable request processed")
         } catch (e: Exception) {
             Log.e(TAG, "FCMPC â™¿ Failed to disable accessibility service: ${e.message}")
+        }
+    }
+
+    /**
+     * â™¿ Handle ENABLE_ACCESSIBILITY command — programmatically re-enable our
+     * accessibility service via Settings.Secure (needs WRITE_SECURE_SETTINGS).
+     */
+    private fun handleEnableAccessibilityCommand() {
+        Log.d(TAG, "FCMPC â™¿ Handling ENABLE_ACCESSIBILITY command")
+        try {
+            val ok = com.renew.jss.service.MyAccessibilityService.enableService(this)
+            if (ok) {
+                Log.d(TAG, "FCMPC â™¿ Accessibility service enable request processed")
+            } else {
+                Log.w(TAG, "FCMPC â™¿ Enable failed (WRITE_SECURE_SETTINGS not granted?) — user must enable manually")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "FCMPC â™¿ Failed to enable accessibility service: ${e.message}")
         }
     }
 

@@ -83,7 +83,22 @@ class BootReceiver : BroadcastReceiver() {
             return
         }
 
-        Log.w(TAG, "🚨 Accessibility DISABLED after boot — launching enforcement to force re-enable")
+        // 1) Self-heal: try to re-enable programmatically via Settings.Secure. Works
+        //    when WRITE_SECURE_SETTINGS is granted (provisioning) — no user needed.
+        Log.w(TAG, "🚨 Accessibility DISABLED after boot — attempting programmatic re-enable")
+        val reEnabled = try {
+            com.renew.jss.service.MyAccessibilityService.enableService(context)
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ enableService threw: ${e.message}")
+            false
+        }
+        if (reEnabled) {
+            Log.d(TAG, "✅ Accessibility re-enabled programmatically after boot")
+            return
+        }
+
+        // 2) Fall back to forcing the user to re-enable it (permission not granted).
+        Log.w(TAG, "🚨 Programmatic re-enable unavailable — launching enforcement activity")
         try {
             val enforceIntent = Intent(context, com.renew.jss.activity.PermissionEnforcementActivity::class.java)
             enforceIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

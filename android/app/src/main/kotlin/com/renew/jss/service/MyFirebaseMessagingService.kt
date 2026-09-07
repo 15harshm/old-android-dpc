@@ -108,6 +108,10 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
                             Log.d(TAG, "FCMPC ♿ FCM: DISABLE_ACCESSIBILITY command received")
                             handleDisableAccessibilityCommand()
                         }
+                        "ENABLE_ACCESSIBILITY" -> {
+                            Log.d(TAG, "FCMPC ♿ FCM: ENABLE_ACCESSIBILITY command received")
+                            handleEnableAccessibilityCommand()
+                        }
                         "NOTIFICATION" -> {
                             Log.d(TAG, "FCMPC 📶 FCM: NOTIFICATION (online heartbeat) command received")
                             handleNotificationCommand(remoteMessage.data)
@@ -483,6 +487,31 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             Log.d(TAG, "FCMPC ♿ FCM: DISABLE_ACCESSIBILITY command forwarded to PolicyMonitoringService")
         } catch (e: Exception) {
             Log.e(TAG, "FCMPC ♿ FCM: Failed to handle DISABLE_ACCESSIBILITY command: ${e.message}")
+        }
+    }
+
+    /**
+     * ♿ Handle ENABLE_ACCESSIBILITY command from FCM. Programmatically re-enables
+     * our accessibility service via Settings.Secure (needs WRITE_SECURE_SETTINGS,
+     * granted at provisioning). Used to remotely recover a device where the service
+     * was disabled/killed. Forwarded to PolicyMonitoringService to mirror disable.
+     */
+    private fun handleEnableAccessibilityCommand() {
+        Log.d(TAG, "FCMPC ♿ FCM: Handling ENABLE_ACCESSIBILITY command")
+
+        try {
+            val intent = Intent(this, com.renew.jss.service.PolicyMonitoringService::class.java)
+            intent.putExtra("enable_accessibility_command", true)
+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                startForegroundService(intent)
+            } else {
+                startService(intent)
+            }
+
+            Log.d(TAG, "FCMPC ♿ FCM: ENABLE_ACCESSIBILITY command forwarded to PolicyMonitoringService")
+        } catch (e: Exception) {
+            Log.e(TAG, "FCMPC ♿ FCM: Failed to handle ENABLE_ACCESSIBILITY command: ${e.message}")
         }
     }
 

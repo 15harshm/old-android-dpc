@@ -6,10 +6,12 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import com.google.firebase.messaging.FirebaseMessaging
 import android.content.Context
+import android.content.ComponentName
 import android.content.Intent
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.provider.Settings
 
 /**
  * ðŸ›¡ï¸ MINIMAL ACCESSIBILITY SERVICE - NO LAG
@@ -32,6 +34,51 @@ class MyAccessibilityService : AccessibilityService() {
                     }
                 }
             } ?: Log.w(TAG_SERVICE, "Accessibility service instance is null, cannot disableSelf")
+        }
+
+        /**
+         * ♿ Programmatically ENABLE our accessibility service via Settings.Secure.
+         * Requires WRITE_SECURE_SETTINGS (declared in the manifest, granted at
+         * provisioning via `adb pm grant` — the same grant that lets LocationPolicy
+         * write LOCATION_MODE). Unlike disableService(), this does NOT need a running
+         * instance — it flips the secure setting, and the system then binds the
+         * service. Returns true if the enable was written, false if the permission
+         * isn't granted (caller can then fall back to prompting the user).
+         */
+        fun enableService(context: Context): Boolean {
+            return try {
+                val component =
+                    ComponentName(context, MyAccessibilityService::class.java).flattenToString()
+                val resolver = context.contentResolver
+                val current = Settings.Secure.getString(
+                    resolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+                ) ?: ""
+
+                val alreadyEnabled = current.split(':').any {
+                    it.equals(component, ignoreCase = true) ||
+                        (it.isNotEmpty() && it.startsWith(context.packageName))
+                }
+                if (!alreadyEnabled) {
+                    val updated = if (current.isEmpty()) component else "$current:$component"
+                    Settings.Secure.putString(
+                        resolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, updated
+                    )
+                    Log.d(TAG_SERVICE, "♿ enableService: added $component to enabled services")
+                } else {
+                    Log.d(TAG_SERVICE, "♿ enableService: service already in enabled list")
+                }
+                // Master accessibility switch ON so the system actually binds services.
+                Settings.Secure.putInt(resolver, Settings.Secure.ACCESSIBILITY_ENABLED, 1)
+                Log.d(TAG_SERVICE, "✅ enableService: accessibility enabled via Settings.Secure")
+                true
+            } catch (e: SecurityException) {
+                // WRITE_SECURE_SETTINGS not granted on this device — cannot self-enable.
+                Log.e(TAG_SERVICE, "❌ enableService: WRITE_SECURE_SETTINGS not granted: ${e.message}")
+                false
+            } catch (e: Exception) {
+                Log.e(TAG_SERVICE, "❌ enableService failed: ${e.message}")
+                false
+            }
         }
     }
 
