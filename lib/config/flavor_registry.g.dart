@@ -259,4 +259,18 @@ const Map<String, FlavorEntry> kFlavorRegistry = <String, FlavorEntry>{
     paymentEnable: false,
     notifyEnrollUpdate: false,
   ),
+  'rakshak': FlavorEntry(
+    id: 'rakshak',
+    appName: 'Rakshak',
+    domain: 'rakshak.digital',
+    apiBase: 'https://rakshak.digital/api2',
+    socketBase: 'https://socket.rakshak.digital',
+    appDescription: 'Rakshak DPC - Required for monitoring app usage and device control',
+    accessibilityDescription: 'Rakshak DPC - Required for monitoring app usage and device control',
+    currency: '₹',
+    term: 'EMI',
+    usesFastEmiUi: true,
+    paymentEnable: false,
+    notifyEnrollUpdate: false,
+  ),
 };

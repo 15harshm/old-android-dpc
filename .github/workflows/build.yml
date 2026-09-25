@@ -5,7 +5,7 @@
 #                copies are stale (the source of truth is tool/flavors/flavors.yaml;
 #                android/flavors.gen.json + lib/config/flavor_registry.g.dart are
 #                generated and MUST be committed fresh), then `flutter analyze`.
-#   2. build   — a matrix over all 16 flavors running the Gradle assemble task.
+#   2. build   — a matrix over all 17 flavors running the Gradle assemble task.
 #                This is the only automated guard that a flavor added to Gradle
 #                (via the registry) actually builds end-to-end.
 #
@@ -100,6 +100,7 @@ jobs:
           - rocketsolution
           - shahjalalbd
           - hrfinancepro
+          - rakshak
     steps:
       - name: Checkout
         uses: actions/checkout@v4

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:emi_locker_dpc/features/emi/presentation/emi_info_screen.dart';
 import '../config/app_config.dart';
 import '../config/fastemi_theme.dart';
+import '../services/imei_service.dart';
 
 class MainScreen extends StatefulWidget {
   final Map<String, dynamic>? deviceInfo;
@@ -22,6 +23,10 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   bool _isRefreshingToken = false;
   int _currentBannerIndex = 0;
+
+  // Read-only IMEI recorded/saved at enrollment (user_imei1). Shown for reference
+  // only — no edit. Loaded locally from storage so it displays even offline.
+  String _imei = '';
 
   // Entrance animations for FastEMI
   late AnimationController _fadeCtrl;
@@ -54,6 +59,21 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
     _fadeCtrl.forward();
     _slideCtrl.forward();
+
+    _loadImei();
+  }
+
+  /// Load the saved IMEI (recorded at enrollment) for read-only display.
+  Future<void> _loadImei() async {
+    try {
+      final saved = await ImeiService.getSavedImei();
+      if (!mounted) return;
+      setState(() {
+        _imei = saved?['imei1'] ?? '';
+      });
+    } catch (_) {
+      // Best-effort; leave blank if unavailable.
+    }
   }
 
   @override
@@ -268,6 +288,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                         _buildInfoRow('Retailer', widget.deviceInfo!['retailerName']),
                         const SizedBox(height: 8),
                         _buildInfoRow('Phone', widget.deviceInfo!['retailerPhone']),
+                        const SizedBox(height: 8),
+                        _buildInfoRow('IMEI', _imei.isNotEmpty ? _imei : '—'),
                       ],
                     ),
                   ),
@@ -627,6 +649,73 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                     ],
                   ),
                 ),
+
+              // 4b. Device IMEI — read-only reference (recorded at enrollment).
+              // Outside the deviceInfo gate so it shows even offline.
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                    decoration: BoxDecoration(
+                      color: FastEmiTheme.cardBg,
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: FastEmiTheme.cobalt.withOpacity(0.10),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.fingerprint_rounded,
+                            color: FastEmiTheme.cobalt,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'DEVICE IMEI',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  color: FastEmiTheme.textLight,
+                                  letterSpacing: 1.5,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _imei.isNotEmpty ? _imei : '—',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w700,
+                                  color: FastEmiTheme.textDark,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
 
               // 5. Section Label: Quick Actions
               SliverToBoxAdapter(

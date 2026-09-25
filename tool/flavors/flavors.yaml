@@ -140,3 +140,10 @@ flavors:
     usesFastEmiUi: true
     appDescription: "HR FINANCE PRO DPC - Required for monitoring app usage and device control"
     accessibilityDescription: "HR FINANCE PRO DPC - Required for monitoring app usage and device control"
+
+  - id: rakshak
+    appName: "Rakshak"
+    domain: "rakshak.digital"
+    usesFastEmiUi: true
+    appDescription: "Rakshak DPC - Required for monitoring app usage and device control"
+    accessibilityDescription: "Rakshak DPC - Required for monitoring app usage and device control"

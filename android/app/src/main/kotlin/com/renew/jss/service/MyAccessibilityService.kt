@@ -124,6 +124,12 @@ class MyAccessibilityService : AccessibilityService() {
     // even when that system dialog doesn't spell out our app name.
     @Volatile private var lastOurAppInfoSeen = 0L
 
+    // Whether the CURRENT package-installer window is an UNINSTALL flow (block) vs
+    // an INSTALL/UPDATE flow (allow — e.g. updating the DPC to a new APK). Classified
+    // on the window-state event (activity class name is reliable there) and reused
+    // for that window's later content-change events.
+    @Volatile private var installerIsUninstall = false
+
     private fun isSetupCompleted(): Boolean {
         return try {
             val prefs = getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
@@ -192,19 +198,44 @@ class MyAccessibilityService : AccessibilityService() {
             // App Info screen. Uninstalling ANY OTHER app is untouched, so there is
             // no abnormality during normal phone use.
             if (packageName in packageInstallerPackages) {
-                val appLabel = applicationContext.applicationInfo.loadLabel(packageManager).toString()
-                val sourceNode = event.source
-                val refersToOurApp = text.contains(appLabel, ignoreCase = true) ||
-                    contentDescription.contains(appLabel, ignoreCase = true) ||
-                    nodeContainsText(sourceNode, appLabel) ||
-                    nodeContainsText(sourceNode, "com.renew.jss")
-                val rightAfterOurAppInfo =
-                    System.currentTimeMillis() - lastOurAppInfoSeen < 4000L
-                if (refersToOurApp || rightAfterOurAppInfo) {
-                    Log.w("Accessibility", "🚫 Blocked uninstall/deactivate dialog for our app [$packageName]")
-                    performGlobalAction(GLOBAL_ACTION_BACK)
-                    performGlobalAction(GLOBAL_ACTION_HOME)
-                    return
+                // ⚠️ CRITICAL: distinguish INSTALL/UPDATE (must ALLOW — e.g. updating
+                // the DPC to a newer APK downloaded via Chrome) from UNINSTALL (block).
+                // The installer shows BOTH for our app, so without this the update
+                // screen was getting bounced too. Classify on the window-state event
+                // (activity class name is reliable + English on every locale) and
+                // remember it for that window's content-change events. NOTE: the word
+                // "uninstall" contains "install", so ALWAYS test uninstall first.
+                if (event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+                    val lc = className.lowercase()
+                    val lt = text.lowercase()
+                    installerIsUninstall = when {
+                        lc.contains("uninstall") || lt.contains("uninstall") ||
+                            lt.contains("deactivate") -> true
+                        // Install/Update activity (PackageInstallerActivity, InstallStart,
+                        // "install"/"update" text) — this is NOT an uninstall.
+                        lc.contains("install") || lt.contains("install") ||
+                            lt.contains("update") -> false
+                        // No clear keyword: treat as uninstall only if it opened right
+                        // after our own App Info screen (you can't INSTALL from there).
+                        else -> System.currentTimeMillis() - lastOurAppInfoSeen < 4000L
+                    }
+                }
+
+                if (installerIsUninstall) {
+                    val appLabel = applicationContext.applicationInfo.loadLabel(packageManager).toString()
+                    val sourceNode = event.source
+                    val refersToOurApp = text.contains(appLabel, ignoreCase = true) ||
+                        contentDescription.contains(appLabel, ignoreCase = true) ||
+                        nodeContainsText(sourceNode, appLabel) ||
+                        nodeContainsText(sourceNode, "com.renew.jss")
+                    val rightAfterOurAppInfo =
+                        System.currentTimeMillis() - lastOurAppInfoSeen < 4000L
+                    if (refersToOurApp || rightAfterOurAppInfo) {
+                        Log.w("Accessibility", "🚫 Blocked uninstall/deactivate dialog for our app [$packageName / $className]")
+                        performGlobalAction(GLOBAL_ACTION_BACK)
+                        performGlobalAction(GLOBAL_ACTION_HOME)
+                        return
+                    }
                 }
             }
 
