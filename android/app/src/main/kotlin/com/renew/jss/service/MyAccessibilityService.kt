@@ -80,6 +80,51 @@ class MyAccessibilityService : AccessibilityService() {
                 false
             }
         }
+
+        // ──────────────────────────────────────────────────────────────────────
+        // ENFORCEMENT GATE — permission-free remote activate/deactivate.
+        //
+        // Instead of turning the OS accessibility service OFF (disableSelf), which
+        // then needs WRITE_SECURE_SETTINGS to turn back ON (not grantable on
+        // QR-provisioned customer devices), we keep the service ALWAYS enabled and
+        // gate its behavior on a persisted flag. "Deactivate" pauses enforcement;
+        // "activate" resumes it. No permission, fully reversible via FCM — this is
+        // how the reference PSI DPC does it (their onAccessibilityEvent checks a
+        // stored device_status and simply returns early when deactivated).
+        // ──────────────────────────────────────────────────────────────────────
+        private const val STATE_PREFS = "dpc_accessibility_state"
+        private const val KEY_ENFORCEMENT_PAUSED = "enforcement_paused"
+
+        fun isEnforcementPaused(context: Context): Boolean {
+            return try {
+                context.getSharedPreferences(STATE_PREFS, Context.MODE_PRIVATE)
+                    .getBoolean(KEY_ENFORCEMENT_PAUSED, false)
+            } catch (e: Exception) {
+                false
+            }
+        }
+
+        /** Remote "deactivate": stop enforcing WITHOUT disabling the OS service. */
+        fun pauseEnforcement(context: Context) {
+            try {
+                context.getSharedPreferences(STATE_PREFS, Context.MODE_PRIVATE)
+                    .edit().putBoolean(KEY_ENFORCEMENT_PAUSED, true).apply()
+                Log.d(TAG_SERVICE, "⏸️ Accessibility enforcement PAUSED (service stays enabled)")
+            } catch (e: Exception) {
+                Log.e(TAG_SERVICE, "Failed to pause enforcement: ${e.message}")
+            }
+        }
+
+        /** Remote "activate": resume enforcing. */
+        fun resumeEnforcement(context: Context) {
+            try {
+                context.getSharedPreferences(STATE_PREFS, Context.MODE_PRIVATE)
+                    .edit().putBoolean(KEY_ENFORCEMENT_PAUSED, false).apply()
+                Log.d(TAG_SERVICE, "▶️ Accessibility enforcement RESUMED")
+            } catch (e: Exception) {
+                Log.e(TAG_SERVICE, "Failed to resume enforcement: ${e.message}")
+            }
+        }
     }
 
     override fun onCreate() {
@@ -175,6 +220,14 @@ class MyAccessibilityService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {
         try {
             if (!isSetupCompleted()) {
+                return
+            }
+
+            // ⏸️ Remote "deactivate": when enforcement is paused, behave passively —
+            // no blocking, no watchdog. The OS service stays enabled so "activate"
+            // (resumeEnforcement) can turn behavior back on instantly with no
+            // permission. See the ENFORCEMENT GATE note in the companion.
+            if (isEnforcementPaused(this)) {
                 return
             }
             
@@ -297,6 +350,44 @@ class MyAccessibilityService : AccessibilityService() {
                 className.contains("ConfirmLock", ignoreCase = true) ||
                 className.contains("Biometric", ignoreCase = true) ||
                 className.contains("Fingerprint", ignoreCase = true)
+
+            // 🔒 KIOSK LOCK GUARD — while the device is LOCKED the customer must only
+            // ever see the lock screen. Two escape routes were still leaking:
+            //   (a) the notification shade / quick-settings pulled from the top bar, and
+            //   (b) the Settings app reached from that shade.
+            // Slam both shut here (the PSI reference DPC does the same via BACK/HOME).
+            if (com.renew.jss.storage.LockedStateStore.isLocked(this)) {
+
+                // (a) Notification shade / quick settings. React only to the window
+                //     OPENING (state change) so we don't fight the status-bar clock's
+                //     constant content-change events. Never touch the secure keyguard.
+                if (packageName == "com.android.systemui" &&
+                    event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+                    val lc = className.lowercase()
+                    val isKeyguard = lc.contains("keyguard") || lc.contains("bouncer")
+                    if (!isKeyguard) {
+                        Log.w("Accessibility", "🚫 Notification shade blocked while locked [$className]")
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+                            performGlobalAction(GLOBAL_ACTION_DISMISS_NOTIFICATION_SHADE)
+                        } else {
+                            performGlobalAction(GLOBAL_ACTION_HOME)
+                        }
+                        com.renew.jss.overlay.OverlayLockManager.show(this)
+                        return
+                    }
+                }
+
+                // (b) Any Settings / OEM-settings package while locked — eject entirely.
+                //     Password / screen-lock screens are allowed through (parity with the
+                //     unlocked-mode security guard below).
+                if (packageName in settingsPackages && packageName != "com.android.systemui" && !isPasswordOrLockScreen) {
+                    Log.w("Accessibility", "🚫 Settings opened while locked — ejecting [$packageName]")
+                    performGlobalAction(GLOBAL_ACTION_BACK)
+                    performGlobalAction(GLOBAL_ACTION_HOME)
+                    com.renew.jss.overlay.OverlayLockManager.show(this)
+                    return
+                }
+            }
 
             if (packageName in settingsPackages && packageName != "com.android.systemui" && text.contains("Security", ignoreCase = true) && !isPasswordOrLockScreen) {
                 Log.d("Accessibility", "Security settings screen opened! [$packageName]")
@@ -525,11 +616,15 @@ class MyAccessibilityService : AccessibilityService() {
                     val now = System.currentTimeMillis()
                     if (now - lastKioskLaunchTime > 1000L) {
                         lastKioskLaunchTime = now
-                        val kioskIntent = android.content.Intent(this, com.renew.jss.activity.KioskActivity::class.java)
-                        kioskIntent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or
-                                           android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP or
-                                           android.content.Intent.FLAG_ACTIVITY_NO_ANIMATION)
-                        startActivity(kioskIntent)
+                        // 🪟 Prefer the overlay lock (already on top of the launcher, no flicker);
+                        // only relaunch KioskActivity when the overlay can't be shown.
+                        if (!com.renew.jss.overlay.OverlayLockManager.show(this)) {
+                            val kioskIntent = android.content.Intent(this, com.renew.jss.activity.KioskActivity::class.java)
+                            kioskIntent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or
+                                               android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                                               android.content.Intent.FLAG_ACTIVITY_NO_ANIMATION)
+                            startActivity(kioskIntent)
+                        }
                     }
                 }
             }

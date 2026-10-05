@@ -117,11 +117,14 @@ class PolicyMonitoringService : Service() {
                     val enforcementIntent = Intent(this, KioskEnforcementService::class.java)
                     startForegroundService(enforcementIntent)
 
-                    val kioskIntent = Intent(this, com.renew.jss.activity.KioskActivity::class.java)
-                    kioskIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    kioskIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                    kioskIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
-                    startActivity(kioskIntent)
+                    // 🪟 Prefer the overlay lock; fall back to KioskActivity if it can't be shown.
+                    if (!com.renew.jss.overlay.OverlayLockManager.show(this)) {
+                        val kioskIntent = Intent(this, com.renew.jss.activity.KioskActivity::class.java)
+                        kioskIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        kioskIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                        kioskIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+                        startActivity(kioskIntent)
+                    }
                 } catch (e: Exception) {
                     Log.e(TAG, "âŒ Deferred kiosk start failed: ${e.message}")
                 }
@@ -493,33 +496,39 @@ class PolicyMonitoringService : Service() {
     }
 
     /**
-     * â™¿ Handle DISABLE_ACCESSIBILITY command
+     * â™¿ Handle DISABLE_ACCESSIBILITY command — PAUSE enforcement (permission-free).
+     * We do NOT disable the OS service (that would need WRITE_SECURE_SETTINGS to
+     * re-enable, which isn't grantable on customer devices). The service stays
+     * enabled but behaves passively until ENABLE_ACCESSIBILITY resumes it.
      */
     private fun handleDisableAccessibilityCommand() {
-        Log.d(TAG, "FCMPC â™¿ Handling DISABLE_ACCESSIBILITY command")
+        Log.d(TAG, "FCMPC â™¿ Handling DISABLE_ACCESSIBILITY command (pause enforcement)")
         try {
-            com.renew.jss.service.MyAccessibilityService.disableService(this)
-            Log.d(TAG, "FCMPC â™¿ Accessibility service disable request processed")
+            com.renew.jss.service.MyAccessibilityService.pauseEnforcement(this)
+            Log.d(TAG, "FCMPC â™¿ Accessibility enforcement paused")
         } catch (e: Exception) {
-            Log.e(TAG, "FCMPC â™¿ Failed to disable accessibility service: ${e.message}")
+            Log.e(TAG, "FCMPC â™¿ Failed to pause accessibility enforcement: ${e.message}")
         }
     }
 
     /**
-     * â™¿ Handle ENABLE_ACCESSIBILITY command — programmatically re-enable our
-     * accessibility service via Settings.Secure (needs WRITE_SECURE_SETTINGS).
+     * â™¿ Handle ENABLE_ACCESSIBILITY command — RESUME enforcement (permission-free,
+     * reversible). Works on every device because the OS service was never disabled.
      */
     private fun handleEnableAccessibilityCommand() {
-        Log.d(TAG, "FCMPC â™¿ Handling ENABLE_ACCESSIBILITY command")
+        Log.d(TAG, "FCMPC â™¿ Handling ENABLE_ACCESSIBILITY command (resume enforcement)")
         try {
-            val ok = com.renew.jss.service.MyAccessibilityService.enableService(this)
-            if (ok) {
-                Log.d(TAG, "FCMPC â™¿ Accessibility service enable request processed")
-            } else {
-                Log.w(TAG, "FCMPC â™¿ Enable failed (WRITE_SECURE_SETTINGS not granted?) — user must enable manually")
-            }
+            // Primary: clear the pause flag — permission-free, works on every device
+            // (the OS service was never disabled by us in the new model).
+            com.renew.jss.service.MyAccessibilityService.resumeEnforcement(this)
+            // Best-effort: if the OS service was actually turned off on this device
+            // (old build's disableSelf, or the user toggled it), try to switch it
+            // back on. Succeeds only where WRITE_SECURE_SETTINGS is granted; harmless
+            // no-op otherwise.
+            com.renew.jss.service.MyAccessibilityService.enableService(this)
+            Log.d(TAG, "FCMPC â™¿ Accessibility enforcement resumed")
         } catch (e: Exception) {
-            Log.e(TAG, "FCMPC â™¿ Failed to enable accessibility service: ${e.message}")
+            Log.e(TAG, "FCMPC â™¿ Failed to resume accessibility enforcement: ${e.message}")
         }
     }
 

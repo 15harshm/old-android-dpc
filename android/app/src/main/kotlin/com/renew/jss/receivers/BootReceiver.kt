@@ -183,14 +183,22 @@ class BootReceiver : BroadcastReceiver() {
                     if (LockedStateStore.isLocked(context)) {
                         Log.d(TAG, "🔒 Device was locked - re-enforcing kiosk")
                         try {
-                            val kioskIntent = Intent(context, com.renew.jss.activity.KioskActivity::class.java)
-                            kioskIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            kioskIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                            kioskIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
-                            context.startActivity(kioskIntent)
-                            Log.d("BootReceiver", "✅ KioskActivity started on boot")
+                            // 🪟 Prefer the overlay lock; fall back to KioskActivity if unavailable.
+                            // On a fresh boot the secure keyguard is usually up (overlays are hidden
+                            // there), so the KioskActivity fallback with FLAG_SHOW_WHEN_LOCKED still
+                            // matters — the periodic enforcement swaps to the overlay once unlocked.
+                            if (!com.renew.jss.overlay.OverlayLockManager.show(context)) {
+                                val kioskIntent = Intent(context, com.renew.jss.activity.KioskActivity::class.java)
+                                kioskIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                kioskIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                                kioskIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+                                context.startActivity(kioskIntent)
+                                Log.d("BootReceiver", "✅ KioskActivity started on boot")
+                            } else {
+                                Log.d("BootReceiver", "✅ Overlay lock started on boot")
+                            }
                         } catch (e: Exception) {
-                            Log.e("BootReceiver", "❌ Failed to start KioskActivity: ${e.message}")
+                            Log.e("BootReceiver", "❌ Failed to start lock on boot: ${e.message}")
                         }
                     }
                 } else {

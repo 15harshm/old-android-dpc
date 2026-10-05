@@ -68,12 +68,17 @@ object KioskPolicy {
             // 🔒 SYNC: Ensure LockedStateStore is also updated
             com.renew.jss.storage.LockedStateStore.setLocked(context, true)
 
-            // Start kiosk activity with NO_ANIMATION flag to prevent flash
-            val intent = Intent(context, KioskActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
-            context.startActivity(intent)
+            // 🪟 PREFER OVERLAY LOCK: a system overlay sits above the launcher so HOME/Recents
+            // can't expose it and there's no relaunch flicker. Only if the overlay can't be
+            // shown (no draw-over-apps permission / keyguard) do we fall back to KioskActivity.
+            if (!com.renew.jss.overlay.OverlayLockManager.show(context)) {
+                Log.d(TAG, "RunningDPC: 🪟 Overlay unavailable - falling back to KioskActivity")
+                val intent = Intent(context, KioskActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+                context.startActivity(intent)
+            }
             
             // 🚫 REMOVED: dpm.lockNow() caused black screen flash by triggering
             // system keyguard AFTER KioskActivity was already launched.
@@ -92,7 +97,10 @@ object KioskPolicy {
         
         try {
             Log.d(TAG, "RunningDPC: 🔓 Exiting kiosk mode")
-            
+
+            // 🪟 Remove the overlay lock immediately so unlock feels instant.
+            com.renew.jss.overlay.OverlayLockManager.hide()
+
             // 🎯 CRITICAL FIX: Set device locked to FALSE FIRST (prevent race conditions)
             KioskStateManager.setKioskEnabled(context, false)
             LockedStateStore.setLocked(context, false)
@@ -175,13 +183,15 @@ object KioskPolicy {
             
             // 🔒 SKIP: setStatusBarDisabled and setKeyguardDisabled require Device Admin permissions
             Log.d(TAG, "RunningDPC: 🔒 Enforcing kiosk state with Device Admin compatible restrictions only")
-                
-                // Ensure kiosk activity is running - use SINGLE_TOP to avoid re-creating it
-                val intent = Intent(context, KioskActivity::class.java)
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
-                context.startActivity(intent)
+
+                // 🪟 Prefer the overlay lock; fall back to KioskActivity if it can't be shown.
+                if (!com.renew.jss.overlay.OverlayLockManager.show(context)) {
+                    val intent = Intent(context, KioskActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+                    context.startActivity(intent)
+                }
                 
                 Log.d(TAG, "✅ Kiosk state enforced successfully")
                 

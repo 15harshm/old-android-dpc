@@ -242,15 +242,19 @@ class PolicyCheckWorker(
                     Log.e(TAG, "❌ Failed to start KioskEnforcementService: ${e.message}")
                 }
                 
-                // Ensure kiosk activity is running
+                // Ensure the lock is present — prefer the overlay, fall back to KioskActivity.
                 try {
-                    val kioskIntent = Intent(applicationContext, com.renew.jss.activity.KioskActivity::class.java)
-                    kioskIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    kioskIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                    applicationContext.startActivity(kioskIntent)
-                    Log.d(TAG, "✅ KioskActivity ensured to be running")
+                    if (!com.renew.jss.overlay.OverlayLockManager.show(applicationContext)) {
+                        val kioskIntent = Intent(applicationContext, com.renew.jss.activity.KioskActivity::class.java)
+                        kioskIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        kioskIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                        applicationContext.startActivity(kioskIntent)
+                        Log.d(TAG, "✅ KioskActivity ensured to be running")
+                    } else {
+                        Log.d(TAG, "✅ Overlay lock ensured present")
+                    }
                 } catch (e: Exception) {
-                    Log.e(TAG, "❌ Failed to start KioskActivity: ${e.message}")
+                    Log.e(TAG, "❌ Failed to ensure lock: ${e.message}")
                 }
                 
                 // Record enforcement for debugging

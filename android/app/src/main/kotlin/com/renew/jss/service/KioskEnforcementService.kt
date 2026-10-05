@@ -342,15 +342,23 @@ class KioskEnforcementService : Service() {
 
         try {
 
+            // 🪟 PREFER OVERLAY: keep the always-on-top overlay lock present. It survives HOME
+            // without a relaunch, so there's nothing to churn every cycle. Only fall back to
+            // (re)launching KioskActivity when the overlay can't be shown.
+            if (com.renew.jss.overlay.OverlayLockManager.show(this)) {
+                Log.d(TAG, "✅ Overlay lock ensured present")
+                return
+            }
+
             val isKioskActivityRunning = isActivityRunning(KioskActivity::class.java)
 
-            
+
 
             if (!isKioskActivityRunning) {
 
                 Log.w(TAG, "⚠️ KioskActivity is not running - restarting it")
 
-                
+
 
                 // Start kiosk activity with SINGLE_TOP to reuse the existing instance
                 // FLAG_ACTIVITY_NO_ANIMATION prevents any visual flash/transition
@@ -360,7 +368,7 @@ class KioskEnforcementService : Service() {
                 intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
                 startActivity(intent)
 
-                
+
 
                 Log.d(TAG, "✅ KioskActivity restarted")
 
