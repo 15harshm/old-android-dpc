@@ -1,0 +1,50 @@
+{
+  "_README": [
+    "Copy this file to scripts/deploy_targets.json (gitignored) and fill in real values.",
+    "running-dpc: EVERY client's remote APK is named running-dpc.apk (one shared name for all).",
+    "1) Define each physical server once under 'servers' (method + host + credentials).",
+    "   method: 'ftps' (recommended, cPanel/aaPanel), 'ftp' (plain), or 'sftp' (SSH; needs: pip install paramiko).",
+    "2) Point each client at its server and remote APK path under 'flavors'.",
+    "   The app checks https://<domain>/apk/running-dpc.apk, so the file must land in that domain's web /apk/ folder:",
+    "     aaPanel : FTP root is /www/wwwroot, so remote_path is RELATIVE: <domain>/apk/running-dpc.apk",
+    "     cPanel  : public_html/apk/running-dpc.apk   (relative to the FTP user's home)",
+    "   'local' is running-dpc's build output name: app-<flavor>-release.apk (in apk_dir).",
+    "   The script auto-creates the /apk folder if missing and uploads the local APK AS running-dpc.apk.",
+    "If a domain is behind Cloudflare, set that server's host to the server IP (FTP can't go through CF).",
+    "Run:  python scripts/deploy_apks.py --dry-run     (preview, no upload)",
+    "      python scripts/deploy_apks.py --only paykist",
+    "      python scripts/deploy_apks.py               (full rollout)"
+  ],
+
+  "apk_dir": "D:/path/to/running-dpc/build/app/outputs/flutter-apk",
+
+  "servers": {
+    "aapanel_grp1":    { "method": "ftps", "host": "AAPANEL_GRP1_IP", "port": 21, "user": "FTP_USER", "password": "FTP_PASS" },
+    "aapanel_grp2":    { "method": "ftps", "host": "AAPANEL_GRP2_IP", "port": 21, "user": "FTP_USER", "password": "FTP_PASS" },
+    "aapanel_grp3":    { "method": "ftps", "host": "AAPANEL_GRP3_IP", "port": 21, "user": "FTP_USER", "password": "FTP_PASS" },
+    "cpanel_eplocker": { "method": "ftps", "host": "eplocker.com",    "port": 21, "user": "FTP_USER", "password": "FTP_PASS" },
+    "cpanel_emipay":   { "method": "ftps", "host": "emipay24.com",    "port": 21, "user": "FTP_USER", "password": "FTP_PASS" }
+  },
+
+  "flavors": {
+    "aiLocker":       { "server": "aapanel_grp1", "local": "app-ailocker-release.apk",       "remote_path": "ailocker.org/apk/running-dpc.apk" },
+    "aiLocker2":      { "server": "aapanel_grp1", "local": "app-ailocker2-release.apk",      "remote_path": "ailocker.online/apk/running-dpc.apk" },
+    "caapglobal":     { "server": "aapanel_grp1", "local": "app-caapglobal-release.apk",     "remote_path": "caapglobal.com/apk/running-dpc.apk" },
+    "keygen":         { "server": "aapanel_grp1", "local": "app-keygen-release.apk",         "remote_path": "emikeygen.com/apk/running-dpc.apk" },
+    "fastemi":        { "server": "aapanel_grp1", "local": "app-fastemi-release.apk",        "remote_path": "fastemi.org/apk/running-dpc.apk" },
+    "shoppoint":      { "server": "aapanel_grp1", "local": "app-myshopmypoint-release.apk",  "remote_path": "myshopmypoint.com/apk/running-dpc.apk" },
+    "nexorha":        { "server": "aapanel_grp1", "local": "app-nexorha-release.apk",        "remote_path": "nexorha.xyz/apk/running-dpc.apk" },
+
+    "hrfinancepro":   { "server": "aapanel_grp2", "local": "app-hrfinancepro-release.apk",   "remote_path": "hrfinancepro.com/apk/running-dpc.apk" },
+    "nexcops":        { "server": "aapanel_grp2", "local": "app-nexcops-release.apk",        "remote_path": "nexcops.com/apk/running-dpc.apk" },
+    "paykist":        { "server": "aapanel_grp2", "local": "app-paykist-release.apk",        "remote_path": "paykist.com/apk/running-dpc.apk" },
+    "rakshak":        { "server": "aapanel_grp2", "local": "app-rakshak-release.apk",        "remote_path": "rakshak.digital/apk/running-dpc.apk" },
+    "rocketsolution": { "server": "aapanel_grp2", "local": "app-rocketsolution-release.apk", "remote_path": "rocketsolution.org/apk/running-dpc.apk" },
+    "shahjalalbd":    { "server": "aapanel_grp2", "local": "app-shahjalalbd-release.apk",    "remote_path": "shahjalalbd.org/apk/running-dpc.apk" },
+
+    "novarynlock":    { "server": "aapanel_grp3", "local": "app-novarynlock-release.apk",    "remote_path": "novarynlock.com/apk/running-dpc.apk" },
+
+    "epLocker":       { "server": "cpanel_eplocker", "local": "app-eplocker-release.apk",    "remote_path": "public_html/apk/running-dpc.apk" },
+    "emipay":         { "server": "cpanel_emipay",   "local": "app-emipay-release.apk",      "remote_path": "public_html/apk/running-dpc.apk" }
+  }
+}

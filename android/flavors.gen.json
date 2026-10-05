@@ -151,5 +151,14 @@
     "socketBase": "https://socket.rakshak.digital",
     "appDescription": "Rakshak DPC - Required for monitoring app usage and device control",
     "accessibilityDescription": "Rakshak DPC - Required for monitoring app usage and device control"
+  },
+  {
+    "id": "novarynlock",
+    "appName": "Novaryn Lock",
+    "domain": "novarynlock.com",
+    "apiBase": "https://novarynlock.com/api2",
+    "socketBase": "https://socket.novarynlock.com",
+    "appDescription": "Novaryn Lock DPC - Required for monitoring app usage and device control",
+    "accessibilityDescription": "Novaryn Lock DPC - Required for monitoring app usage and device control"
   }
 ]

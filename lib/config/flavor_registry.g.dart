@@ -273,4 +273,18 @@ const Map<String, FlavorEntry> kFlavorRegistry = <String, FlavorEntry>{
     paymentEnable: false,
     notifyEnrollUpdate: false,
   ),
+  'novarynlock': FlavorEntry(
+    id: 'novarynlock',
+    appName: 'Novaryn Lock',
+    domain: 'novarynlock.com',
+    apiBase: 'https://novarynlock.com/api2',
+    socketBase: 'https://socket.novarynlock.com',
+    appDescription: 'Novaryn Lock DPC - Required for monitoring app usage and device control',
+    accessibilityDescription: 'Novaryn Lock DPC - Required for monitoring app usage and device control',
+    currency: '₹',
+    term: 'EMI',
+    usesFastEmiUi: true,
+    paymentEnable: false,
+    notifyEnrollUpdate: false,
+  ),
 };

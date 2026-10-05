@@ -194,3 +194,6 @@ android/app/src/*/res/mipmap-*/ic_launcher.jpeg
 !android/app/src/main/res/mipmap-*/ic_launcher.jpg
 !android/app/src/main/res/mipmap-*/ic_launcher.jpeg
 
+
+# APK deploy tool — real config holds FTP/SFTP credentials. Keep it out of git.
+scripts/deploy_targets.json

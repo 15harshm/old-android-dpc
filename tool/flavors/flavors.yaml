@@ -147,3 +147,10 @@ flavors:
     usesFastEmiUi: true
     appDescription: "Rakshak DPC - Required for monitoring app usage and device control"
     accessibilityDescription: "Rakshak DPC - Required for monitoring app usage and device control"
+
+  - id: novarynlock
+    appName: "Novaryn Lock"
+    domain: "novarynlock.com"
+    usesFastEmiUi: true
+    appDescription: "Novaryn Lock DPC - Required for monitoring app usage and device control"
+    accessibilityDescription: "Novaryn Lock DPC - Required for monitoring app usage and device control"
