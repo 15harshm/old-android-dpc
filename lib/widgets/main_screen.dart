@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:emi_locker_dpc/features/emi/presentation/emi_info_screen.dart';
 import '../config/app_config.dart';
 import '../config/fastemi_theme.dart';
+import '../config/novaryn_theme.dart';
+import 'novaryn_ui.dart';
 import '../services/imei_service.dart';
 
 class MainScreen extends StatefulWidget {
@@ -119,6 +121,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    if (AppConfig.isNovaryn) {
+      return _buildNovarynUI(context);
+    }
     if (AppConfig.usesFastEmiUi) {
       return _buildFastEmiUI(context);
     }
@@ -781,6 +786,318 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  // ── Novaryn flavor UI ──────────────────────────────────────────────────────
+  // Deliberately re-arranged vs FastEmi so the two apps read as different
+  // products: brand hero with an overlapping status card, a single consolidated
+  // "Account Details" card (not a 2x2 stat grid), tinted-icon quick actions, and
+  // a full-width gradient CTA (no FAB). The hidden remove-DPC trigger and every
+  // callback (refresh, call, overdue/confirm dialogs, removal gating) are kept.
+  Widget _buildNovarynUI(BuildContext context) {
+    final info = widget.deviceInfo;
+    final customerName = info?['customerName'] ?? 'Valued Customer';
+    final pendingEmiCount = info?['pendingEmi'] ?? 0;
+    final allPaid = info != null && pendingEmiCount == 0;
+
+    void handleRemove() {
+      if (info == null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Loading device information...'),
+            backgroundColor: NV.amber));
+        return;
+      }
+      final pendingEmi =
+          int.tryParse(info['pendingEmi']?.toString() ?? '0') ?? 0;
+      final totalEmi = int.tryParse(info['totalEmi']?.toString() ?? '0') ?? 0;
+      if (totalEmi <= 0) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+                'Cannot remove restrictions: no ${AppConfig.paymentTerm} details found'),
+            backgroundColor: NV.amber));
+      } else if (pendingEmi > 0) {
+        _showOverdueDialog(context, pendingEmi);
+      } else {
+        _showConfirmUninstallDialog(context);
+      }
+    }
+
+    return Scaffold(
+      backgroundColor: NV.pageBg,
+      body: NvPageBackground(
+        child: FadeTransition(
+          opacity: _fadeAnim,
+          child: SlideTransition(
+            position: _slideAnim,
+            child: CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                // Hero
+                SliverToBoxAdapter(
+                  child: NvHeroBackground(
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(30),
+                      bottomRight: Radius.circular(30),
+                    ),
+                    child: SafeArea(
+                      bottom: false,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 54),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Expanded(
+                                  child: NvBrandLogo(
+                                      markHeight: 40,
+                                      wordSize: 19,
+                                      showTagline: false),
+                                ),
+                                // Hidden remove-DPC trigger (invisible, as in the
+                                // other flavors) — kept for the retailer gesture.
+                                GestureDetector(
+                                  onLongPress: handleRemove,
+                                  behavior: HitTestBehavior.opaque,
+                                  child: const SizedBox(width: 30, height: 44),
+                                ),
+                                const SizedBox(width: 6),
+                                NvGlassIconButton(
+                                  icon: Icons.sync_rounded,
+                                  busy: _isRefreshingToken,
+                                  onTap:
+                                      _isRefreshingToken ? null : _refreshToken,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 22),
+                            Text('Welcome back,',
+                                style: NV.font(
+                                    size: 13,
+                                    color:
+                                        Colors.white.withValues(alpha: 0.75))),
+                            const SizedBox(height: 2),
+                            Text(
+                              customerName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: NV.font(
+                                  size: 24,
+                                  weight: FontWeight.w700,
+                                  color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Overlapping status card
+                SliverToBoxAdapter(
+                  child: Transform.translate(
+                    offset: const Offset(0, -34),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                      child: NvCard(
+                        padding: const EdgeInsets.all(18),
+                        child: Row(
+                          children: [
+                            NvGlossyIcon(
+                              icon: allPaid
+                                  ? Icons.verified_rounded
+                                  : Icons.warning_amber_rounded,
+                              color: info == null
+                                  ? NV.textLight
+                                  : (allPaid ? NV.green : NV.amber),
+                              size: 52,
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('${AppConfig.paymentTerm} STATUS'.toUpperCase(),
+                                      style: NV.font(
+                                          size: 10.5,
+                                          weight: FontWeight.w700,
+                                          color: NV.textLight,
+                                          letterSpacing: 1.3)),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    info == null
+                                        ? 'Loading...'
+                                        : (pendingEmiCount > 0
+                                            ? '$pendingEmiCount Overdue'
+                                            : 'All Paid'),
+                                    style: NV.font(
+                                        size: 22,
+                                        weight: FontWeight.w700,
+                                        color: info == null
+                                            ? NV.textMid
+                                            : (allPaid ? NV.green : NV.red)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            NvPill(
+                              label: info == null
+                                  ? 'Syncing'
+                                  : (allPaid ? 'Protected' : 'Action Needed'),
+                              color: info == null
+                                  ? NV.blue
+                                  : (allPaid ? NV.green : NV.amber),
+                              icon: allPaid
+                                  ? Icons.shield_rounded
+                                  : Icons.priority_high_rounded,
+                              solid: true,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Account details (consolidated card)
+                SliverToBoxAdapter(
+                  child: Transform.translate(
+                    offset: const Offset(0, -18),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const NvSectionLabel('Account Details'),
+                          NvCard(
+                            padding: const EdgeInsets.all(18),
+                            child: Column(
+                              children: [
+                                if (info != null) ...[
+                                  NvInfoLine('Customer',
+                                      info['customerName'] ?? '—'),
+                                  NvInfoLine(
+                                      'Device', info['deviceModel'] ?? '—'),
+                                  NvInfoLine('Retailer',
+                                      info['retailerName'] ?? '—'),
+                                  NvInfoLine('Helpline',
+                                      info['retailerPhone'] ?? '—'),
+                                ],
+                                NvInfoLine(
+                                    'Device IMEI', _imei.isNotEmpty ? _imei : '—',
+                                    last: true),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Quick actions
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 6, 20, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 10),
+                        const NvSectionLabel('Quick Actions'),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildNvActionTile(
+                                title: 'Helpline',
+                                subtitle: 'Call support',
+                                icon: Icons.support_agent_rounded,
+                                color: NV.purple,
+                                onTap: () {
+                                  final phone = info?['retailerPhone'] ?? '';
+                                  if (phone.isNotEmpty) {
+                                    _launchCaller(phone);
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                            content: Text(
+                                                'Helpline number not available'),
+                                            backgroundColor: NV.red));
+                                  }
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: _buildNvActionTile(
+                                title: 'Sync',
+                                subtitle: _isRefreshingToken
+                                    ? 'Refreshing...'
+                                    : 'Force reload',
+                                icon: Icons.sync_rounded,
+                                color: NV.blue,
+                                onTap: _isRefreshingToken ? () {} : _refreshToken,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // CTA
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                    child: NvGradientButton(
+                      label: 'View ${AppConfig.paymentTerm} Information',
+                      icon: Icons.receipt_long_rounded,
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const EmiInfoScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+
+                const SliverToBoxAdapter(child: SizedBox(height: 32)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNvActionTile({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return NvCard(
+      padding: const EdgeInsets.all(16),
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          NvGlossyIcon(icon: icon, color: color, size: 42),
+          const SizedBox(height: 14),
+          Text(title,
+              style: NV.font(size: 15, weight: FontWeight.w700)),
+          const SizedBox(height: 2),
+          Text(subtitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: NV.font(size: 12, color: NV.textMid)),
+        ],
       ),
     );
   }

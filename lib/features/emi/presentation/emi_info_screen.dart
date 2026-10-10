@@ -7,6 +7,8 @@ import '../../../core/device_info_response.dart';
 import '../../../utils/network_helper.dart';
 import '../../../config/app_config.dart';
 import '../../../config/fastemi_theme.dart';
+import '../../../config/novaryn_theme.dart';
+import '../../../widgets/novaryn_ui.dart';
 
 class EmiInfoScreen extends StatefulWidget {
   const EmiInfoScreen({super.key});
@@ -123,6 +125,9 @@ class _EmiInfoScreenState extends State<EmiInfoScreen> with TickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
+    if (AppConfig.isNovaryn) {
+      return _buildNovarynUI(context);
+    }
     if (AppConfig.usesFastEmiUi) {
       return _buildFastEmiUI(context);
     }
@@ -686,6 +691,389 @@ class _EmiInfoScreenState extends State<EmiInfoScreen> with TickerProviderStateM
     } catch (e) {
       return dateString;
     }
+  }
+
+  // ==================== Novaryn flavor UI ====================
+  // Distinct layout vs FastEmi: brand/back hero with the outstanding total,
+  // summary as three tinted pill-stats, white detail cards, and a schedule of
+  // NvCard tiles. Same data model, refresh and date formatting.
+  Widget _buildNovarynUI(BuildContext context) {
+    return Scaffold(
+      backgroundColor: NV.pageBg,
+      body: NvPageBackground(
+        child: RefreshIndicator(
+          color: NV.blue,
+          onRefresh: _fetchDeviceInfo,
+          child: FadeTransition(
+            opacity: _fadeAnim,
+            child: SlideTransition(
+              position: _slideAnim,
+              child: _buildNovarynBody(),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _nvHero({required Widget below}) {
+    return NvHeroBackground(
+      borderRadius: const BorderRadius.only(
+        bottomLeft: Radius.circular(30),
+        bottomRight: Radius.circular(30),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 20, 26),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  NvGlassIconButton(
+                    icon: Icons.arrow_back_rounded,
+                    size: 40,
+                    onTap: () => Navigator.of(context).pop(),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text('${AppConfig.paymentTerm} Details',
+                        style: NV.font(
+                            size: 20,
+                            weight: FontWeight.w700,
+                            color: Colors.white)),
+                  ),
+                  NvGlassIconButton(
+                    icon: Icons.refresh_rounded,
+                    size: 40,
+                    onTap: _fetchDeviceInfo,
+                  ),
+                ],
+              ),
+              below,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNovarynBody() {
+    if (isLoading) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const CircularProgressIndicator(color: NV.blue),
+            const SizedBox(height: 16),
+            Text('Loading ${AppConfig.paymentTerm} information...',
+                style: NV.font(size: 14, color: NV.textMid)),
+          ],
+        ),
+      );
+    }
+
+    if (errorMessage != null) {
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          _nvHero(below: const SizedBox.shrink()),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
+            child: Column(
+              children: [
+                const NvGlossyIcon(
+                    icon: Icons.wifi_off_rounded, color: NV.red, size: 60),
+                const SizedBox(height: 18),
+                Text('Sync Error',
+                    style: NV.font(
+                        size: 19, weight: FontWeight.w700, color: NV.red)),
+                const SizedBox(height: 8),
+                Text(errorMessage!,
+                    textAlign: TextAlign.center,
+                    style: NV.font(size: 13.5, color: NV.textMid, height: 1.4)),
+                const SizedBox(height: 22),
+                NvGradientButton(
+                  label: 'Retry Connection',
+                  icon: Icons.refresh_rounded,
+                  onPressed: _fetchDeviceInfo,
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (deviceInfo == null) {
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          _nvHero(below: const SizedBox.shrink()),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
+            child: Column(
+              children: [
+                const NvGlossyIcon(
+                    icon: Icons.phonelink_erase_rounded,
+                    color: NV.textLight,
+                    size: 60),
+                const SizedBox(height: 18),
+                Text('No ${AppConfig.paymentTerm} information',
+                    style: NV.font(
+                        size: 18, weight: FontWeight.w700, color: NV.textMid)),
+                const SizedBox(height: 8),
+                Text('Pull down to refresh and try again.',
+                    textAlign: TextAlign.center,
+                    style: NV.font(size: 13.5, color: NV.textLight)),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
+    final c = deviceInfo!.customer;
+    final u = deviceInfo!.user;
+    final summary = deviceInfo!.emiSummary;
+    final cur = AppConfig.currencySymbol;
+
+    String money(String? v) =>
+        '$cur${(double.tryParse(v ?? '0') ?? 0.0).toStringAsFixed(2)}';
+
+    return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
+      slivers: [
+        SliverToBoxAdapter(
+          child: _nvHero(
+            below: Padding(
+              padding: const EdgeInsets.only(left: 4, top: 22),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('OUTSTANDING AMOUNT',
+                      style: NV.font(
+                          size: 11,
+                          weight: FontWeight.w700,
+                          color: Colors.white.withValues(alpha: 0.75),
+                          letterSpacing: 1.5)),
+                  const SizedBox(height: 6),
+                  Text('$cur${summary.totalAmount.toStringAsFixed(2)}',
+                      style: NV.font(
+                          size: 34,
+                          weight: FontWeight.w700,
+                          color: Colors.white)),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // Summary stat pills
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+          sliver: SliverToBoxAdapter(
+            child: Row(
+              children: [
+                Expanded(
+                    child: _nvStat('Total', '${summary.totalEmi}', NV.blue)),
+                const SizedBox(width: 12),
+                Expanded(
+                    child: _nvStat(
+                        'Paid', '${summary.paidEmi ?? 0}', NV.green)),
+                const SizedBox(width: 12),
+                Expanded(
+                    child: _nvStat(
+                        'Pending', '${summary.pendingEmi ?? 0}', NV.amber)),
+              ],
+            ),
+          ),
+        ),
+
+        // Detail cards
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+          sliver: SliverToBoxAdapter(
+            child: Column(
+              children: [
+                const Align(
+                    alignment: Alignment.centerLeft,
+                    child: NvSectionLabel('Customer')),
+                NvCard(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    children: [
+                      NvInfoLine('Customer Name', c.customerName),
+                      NvInfoLine('Phone Number', c.phoneNumber),
+                      NvInfoLine('Address', u.address),
+                      NvInfoLine('Retailer Name', u.userName, last: true),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 18),
+                const Align(
+                    alignment: Alignment.centerLeft,
+                    child: NvSectionLabel('Device & Plan')),
+                NvCard(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    children: [
+                      NvInfoLine('Brand', c.brand),
+                      NvInfoLine('Model', c.model),
+                      NvInfoLine('IMEI 1', c.imei1),
+                      if (c.imei2.isNotEmpty) NvInfoLine('IMEI 2', c.imei2),
+                      NvInfoLine('Device Price', money(c.devicePrice)),
+                      NvInfoLine('Down Payment', money(c.downPayment)),
+                      NvInfoLine(
+                          'Monthly ${AppConfig.paymentTerm}', money(c.monthlyEmi)),
+                      NvInfoLine('Interest Rate', '${c.interestRate}%'),
+                      NvInfoLine('Number of ${AppConfig.paymentTerm}s',
+                          c.numberOfEmi,
+                          last: true),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Schedule
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 22, 20, 8),
+            child: Align(
+                alignment: Alignment.centerLeft,
+                child: NvSectionLabel('${AppConfig.paymentTerm} Schedule')),
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) => _buildNvEmiTile(deviceInfo!.emiList[index]),
+              childCount: deviceInfo!.emiList.length,
+            ),
+          ),
+        ),
+        const SliverToBoxAdapter(child: SizedBox(height: 32)),
+      ],
+    );
+  }
+
+  Widget _nvStat(String label, String value, Color color) {
+    return NvCard(
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+      borderColor: color.withValues(alpha: 0.2),
+      child: Column(
+        children: [
+          Text(label.toUpperCase(),
+              style: NV.font(
+                  size: 10, weight: FontWeight.w700, color: NV.textLight,
+                  letterSpacing: 0.6)),
+          const SizedBox(height: 6),
+          Text(value,
+              style: NV.font(size: 20, weight: FontWeight.w700, color: color)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNvEmiTile(EmiDetail emi) {
+    Color statusColor;
+    String statusText;
+    IconData statusIcon;
+    bool hasPenalty = false;
+    double penaltyAmount = 0.0;
+
+    if (emi.isPaid) {
+      statusColor = NV.green;
+      statusText = 'Paid';
+      statusIcon = Icons.check_circle_rounded;
+    } else if (emi.isOverdue()) {
+      statusColor = NV.red;
+      statusText = 'Overdue';
+      statusIcon = Icons.error_rounded;
+      if (deviceInfo != null && deviceInfo!.penalty > 0) {
+        hasPenalty = true;
+        penaltyAmount = deviceInfo!.penalty;
+      }
+    } else {
+      statusColor = NV.amber;
+      statusText = 'Pending';
+      statusIcon = Icons.schedule_rounded;
+    }
+
+    final double baseAmount = double.tryParse(emi.amount) ?? 0.0;
+    final double totalEmiAmount = baseAmount + penaltyAmount;
+    final cur = AppConfig.currencySymbol;
+
+    return NvCard(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
+      borderColor: statusColor.withValues(alpha: 0.2),
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: statusColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text('${emi.emiNo}',
+                style: NV.font(
+                    size: 15, weight: FontWeight.w700, color: statusColor)),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('${AppConfig.paymentTerm} ${emi.emiNo}',
+                    style: NV.font(size: 14.5, weight: FontWeight.w700)),
+                const SizedBox(height: 2),
+                Text('Due ${_formatDate(emi.dueDate)}',
+                    style: NV.font(size: 12, color: NV.textMid)),
+                if (hasPenalty) ...[
+                  const SizedBox(height: 6),
+                  NvPill(
+                      label:
+                          'Penalty $cur${penaltyAmount.toStringAsFixed(2)}',
+                      color: NV.red),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text('$cur${totalEmiAmount.toStringAsFixed(2)}',
+                  style: NV.font(
+                      size: 15,
+                      weight: FontWeight.w700,
+                      color: hasPenalty ? NV.red : NV.textDark)),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(statusIcon, size: 13, color: statusColor),
+                  const SizedBox(width: 4),
+                  Text(statusText,
+                      style: NV.font(
+                          size: 11,
+                          weight: FontWeight.w600,
+                          color: statusColor)),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   // ==================== FastEMI Custom UI ====================

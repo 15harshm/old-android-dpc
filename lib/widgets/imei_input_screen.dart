@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../config/app_config.dart';
 import '../config/fastemi_theme.dart';
+import '../config/novaryn_theme.dart';
+import 'novaryn_ui.dart';
 
 class ImeiInputScreen extends StatelessWidget {
   final TextEditingController imei1Controller;
@@ -18,6 +20,9 @@ class ImeiInputScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (AppConfig.isNovaryn) {
+      return _buildNovarynUI(context);
+    }
     if (AppConfig.usesFastEmiUi) {
       return _buildFastEmiUI(context);
     }
@@ -101,6 +106,138 @@ class ImeiInputScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // ── Novaryn flavor UI ──────────────────────────────────────────────────────
+  // Distinct layout vs the FastEmi flavor: brand hero at the top (wordmark +
+  // padlock mark), the form lives in a floating white card that overlaps the
+  // hero, a glossy shield badge, and a gradient CTA. Same logic/callbacks.
+  Widget _buildNovarynUI(BuildContext context) {
+    TextField field(TextEditingController c, String label) => TextField(
+          controller: c,
+          keyboardType: TextInputType.text,
+          style: NV.font(size: 15, weight: FontWeight.w600, color: NV.textDark),
+          decoration: InputDecoration(
+            labelText: label,
+            hintText: 'Enter $label',
+            prefixIcon: const Icon(Icons.pin_rounded),
+          ),
+        );
+
+    return Scaffold(
+      backgroundColor: NV.pageBg,
+      body: NvPageBackground(
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: NvHeroBackground(
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(30),
+                  bottomRight: Radius.circular(30),
+                ),
+                child: SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 18, 20, 48),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const NvBrandLogo(markHeight: 44, wordSize: 22),
+                        const SizedBox(height: 26),
+                        Text(
+                          'Device Setup',
+                          style: NV.font(
+                              size: 27,
+                              weight: FontWeight.w700,
+                              color: Colors.white),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Register this device to activate Novaryn Lock protection.',
+                          style: NV.font(
+                              size: 13.5,
+                              color: Colors.white.withValues(alpha: 0.82),
+                              height: 1.4),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Transform.translate(
+                offset: const Offset(0, -28),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                  child: NvCard(
+                    padding: const EdgeInsets.all(22),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          children: [
+                            const NvGlossyIcon(
+                                icon: Icons.verified_user_rounded,
+                                color: NV.blue,
+                                size: 46),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Verify your device',
+                                      style: NV.font(
+                                          size: 16.5,
+                                          weight: FontWeight.w700)),
+                                  const SizedBox(height: 2),
+                                  Text('Enter both IMEI numbers to continue',
+                                      style: NV.font(
+                                          size: 12.5, color: NV.textMid)),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 22),
+                        field(imei1Controller, 'IMEI 1'),
+                        const SizedBox(height: 14),
+                        field(imei2Controller, 'IMEI 2'),
+                        const SizedBox(height: 22),
+                        NvGradientButton(
+                          label: 'Save & Continue',
+                          icon: Icons.arrow_forward_rounded,
+                          onPressed: onSave,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 4, bottom: 24),
+                child: Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.shield_rounded,
+                          size: 15, color: NV.textLight),
+                      const SizedBox(width: 6),
+                      Text('Secured by Novaryn Lock',
+                          style:
+                              NV.font(size: 12, color: NV.textLight)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

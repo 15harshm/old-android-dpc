@@ -20,6 +20,14 @@ class AppConfig {
   /// Premium (FastEmi) UI gate — replaces the copy-pasted 5-flavor OR-chains.
   static bool get usesFastEmiUi => _entry?.usesFastEmiUi ?? false;
 
+  /// Novaryn flavor gate. The novaryn client is in the same area as another
+  /// client running this same app, so its customer UI is deliberately given a
+  /// distinct theme + layout (navy/royal-blue Novaryn look) so the two apps read
+  /// as separate products. Scoped to this flavor only — no other client is
+  /// affected. novaryn also sets usesFastEmiUi, so isNovaryn is checked FIRST at
+  /// every UI branch to intercept before the FastEmi path.
+  static bool get isNovaryn => currentFlavor == 'novarynlock';
+
   /// Whether to notify the server of enrollment updates (was the eplocker check).
   static bool get notifyEnrollUpdate => _entry?.notifyEnrollUpdate ?? false;
 

@@ -8,6 +8,7 @@ import 'package:emi_locker_dpc/widgets/permission_setup_screen.dart';
 import 'package:emi_locker_dpc/widgets/main_screen.dart';
 import 'config/app_config.dart';
 import 'config/fastemi_theme.dart';
+import 'config/novaryn_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,9 +23,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: AppConfig.appName,
-      theme: AppConfig.usesFastEmiUi
-          ? FastEmiTheme.themeData
-          : ThemeData(primarySwatch: Colors.blue, fontFamily: 'Roboto'),
+      theme: AppConfig.isNovaryn
+          ? buildNovarynTheme()
+          : (AppConfig.usesFastEmiUi
+              ? FastEmiTheme.themeData
+              : ThemeData(primarySwatch: Colors.blue, fontFamily: 'Roboto')),
       home: const HomePage(),
       debugShowCheckedModeBanner: false,
     );

@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../config/app_config.dart';
 import '../config/fastemi_theme.dart';
+import '../config/novaryn_theme.dart';
+import 'novaryn_ui.dart';
 
 class PermissionSetupScreen extends StatefulWidget {
   final Future<void> Function() onAllPermissionsGranted;
@@ -232,6 +234,9 @@ class _PermissionSetupScreenState extends State<PermissionSetupScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (AppConfig.isNovaryn) {
+      return _buildNovarynUI(context);
+    }
     if (AppConfig.usesFastEmiUi) {
       return _buildFastEmiUI(context);
     }
@@ -422,6 +427,207 @@ class _PermissionSetupScreenState extends State<PermissionSetupScreen>
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
                           ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+
+  // ── Novaryn flavor UI ──────────────────────────────────────────────────────
+  // Distinct layout vs FastEmi: brand hero with a live "granted X/N" progress
+  // ring, permissions as glossy-icon cards with a tap-to-grant chevron / check,
+  // and a sticky gradient CTA. All permission logic/callbacks unchanged.
+  Widget _buildNovarynUI(BuildContext context) {
+    final grantedCount =
+        _permissionStatus.values.where((v) => v).length;
+    final total = _permissions.length;
+    final progress = total == 0 ? 0.0 : grantedCount / total;
+
+    const iconColors = [
+      NV.blue, NV.purple, NV.teal, NV.orange,
+      NV.pink, NV.indigo, NV.amber, NV.cyan,
+    ];
+
+    return Scaffold(
+      backgroundColor: NV.pageBg,
+      body: NvPageBackground(
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator(color: NV.blue))
+            : Column(
+                children: [
+                  // Hero with progress ring
+                  NvHeroBackground(
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(30),
+                      bottomRight: Radius.circular(30),
+                    ),
+                    child: SafeArea(
+                      bottom: false,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const NvBrandLogo(
+                                markHeight: 40,
+                                wordSize: 19,
+                                showTagline: false),
+                            const SizedBox(height: 22),
+                            Row(
+                              children: [
+                                SizedBox(
+                                  width: 58,
+                                  height: 58,
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      SizedBox(
+                                        width: 58,
+                                        height: 58,
+                                        child: CircularProgressIndicator(
+                                          value: progress,
+                                          strokeWidth: 5,
+                                          backgroundColor: Colors.white
+                                              .withValues(alpha: 0.18),
+                                          valueColor:
+                                              const AlwaysStoppedAnimation(
+                                                  NV.cyan300),
+                                        ),
+                                      ),
+                                      Text('$grantedCount/$total',
+                                          style: NV.font(
+                                              size: 14,
+                                              weight: FontWeight.w700,
+                                              color: Colors.white)),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Grant Permissions',
+                                          style: NV.font(
+                                              size: 23,
+                                              weight: FontWeight.w700,
+                                              color: Colors.white)),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        _allPermissionsGranted
+                                            ? 'All set — you can continue'
+                                            : 'Enable each permission to protect this device',
+                                        style: NV.font(
+                                            size: 12.5,
+                                            color: Colors.white
+                                                .withValues(alpha: 0.82),
+                                            height: 1.35),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Permission list
+                  Expanded(
+                    child: ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+                      itemCount: _permissions.length,
+                      itemBuilder: (context, index) {
+                        final permission = _permissions[index];
+                        final isGranted =
+                            _permissionStatus[permission['key']] ?? false;
+                        final c = iconColors[index % iconColors.length];
+                        return NvCard(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(14),
+                          borderColor: isGranted
+                              ? NV.green.withValues(alpha: 0.4)
+                              : NV.cardBorder,
+                          onTap: isGranted
+                              ? null
+                              : () => _requestPermission(permission['key']),
+                          child: Row(
+                            children: [
+                              NvTintIcon(
+                                  icon: permission['icon'],
+                                  color: isGranted ? NV.green : c,
+                                  size: 44),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(permission['name'],
+                                        style: NV.font(
+                                            size: 15,
+                                            weight: FontWeight.w700)),
+                                    const SizedBox(height: 2),
+                                    Text(permission['description'],
+                                        style: NV.font(
+                                            size: 12, color: NV.textMid)),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              if (isGranted)
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: const BoxDecoration(
+                                      color: NV.green,
+                                      shape: BoxShape.circle),
+                                  child: const Icon(Icons.check_rounded,
+                                      color: Colors.white, size: 16),
+                                )
+                              else
+                                const NvPill(
+                                    label: 'Grant',
+                                    color: NV.blue,
+                                    icon: Icons.chevron_right_rounded),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  // Sticky CTA
+                  Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      border: Border(
+                          top: BorderSide(color: NV.divider, width: 1)),
+                    ),
+                    child: SafeArea(
+                      top: false,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
+                        child: NvGradientButton(
+                          label: _allPermissionsGranted
+                              ? 'Continue'
+                              : 'Grant All Permissions',
+                          icon: _allPermissionsGranted
+                              ? Icons.check_circle_rounded
+                              : Icons.lock_open_rounded,
+                          onPressed: _allPermissionsGranted &&
+                                  !_isProcessingDeviceAdmin
+                              ? () async {
+                                  print(
+                                      'RunningDPC: 🚀 User clicked Continue button - starting DPC services');
+                                  await widget.onAllPermissionsGranted();
+                                }
+                              : null,
                         ),
                       ),
                     ),
