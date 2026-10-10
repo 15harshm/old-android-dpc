@@ -1,146 +1,208 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Novaryn Lock kiosk screen — visual design mirrored from MainDpc's novaryn flavor
-    (premium navy theme, brand logo, blue accent, top IMPORTANT NOTICE card).
-    IMPORTANT: this is running-dpc, so the lock UI uses the SIX pin_box_* fields +
-    user_name/user_phone/user_address/payment_photo/payment_photo_placeholder/unlock_button
-    that KioskActivity and OverlayLockManager bind. MainDpc's UPI "Pay Now" card is
-    intentionally NOT ported (running-dpc has no in-app payment flow).
+  Novaryn (Noxaryn Locker) kiosk screen — visual design ported from MainDpc's novaryn
+  flavor (light theme, hero banner, IMPORTANT NOTICE, two-tone DEVICE LOCKED, colored
+  detail tiles, blue QR header, footer).
+
+  Adapted to running-dpc's shared lock code:
+   - PIN uses the SIX pin_box_* fields (not MainDpc's single pin_input) that
+     KioskActivity / OverlayLockManager bind.
+   - Detail rows bind running-dpc's real data (user_name / user_phone / user_address)
+     instead of MainDpc's device-model field.
+   - The Payment QR body is always shown (running-dpc has no collapse handler).
+  NOT ported (MainDpc-only features with no running-dpc code): the UPI "Pay Now" card,
+  the WiFi + Sync-token card, the collapsible-QR behavior, and the device-model row.
 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Premium navy background (matches MainDpc novaryn) -->
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:background="#020A22">
+        android:fillViewport="true"
+        android:background="#EEF3FB">
 
-        <!-- Slim top bar: leaves room at the top-right for the sync button that
-             KioskActivity / OverlayLockManager add programmatically. -->
-        <View
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="56dp" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-        <!-- Main Content Area -->
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:fillViewport="true">
+            <!-- Hero banner -->
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:scaleType="fitCenter"
+                android:src="@drawable/noxaryn_hero"
+                android:contentDescription="Noxaryn Locker" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp"
-                android:paddingBottom="24dp"
-                android:gravity="center_horizontal">
+                android:paddingLeft="20dp"
+                android:paddingRight="20dp"
+                android:paddingBottom="20dp"
+                android:paddingTop="20dp"
+                android:layout_marginTop="-46dp">
 
-                <!-- Novaryn app logo -->
-                <ImageView
-                    android:layout_width="104dp"
-                    android:layout_height="104dp"
-                    android:layout_marginTop="4dp"
-                    android:src="@drawable/novaryn_kiosk_logo"
-                    android:scaleType="fitCenter"
-                    android:contentDescription="@string/app_name" />
-
-                <!-- Warning Card (Muted Red Notice) — sits below the logo -->
+                <!-- IMPORTANT NOTICE (overlaps the hero's lower edge) -->
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="28dp"
                     android:layout_marginBottom="24dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="4dp"
-                    app:cardBackgroundColor="#FFECEC">
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="#FCE9E9">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="20dp">
+                        android:orientation="horizontal"
+                        android:padding="18dp">
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginBottom="12dp">
+                        <FrameLayout
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:layout_marginEnd="14dp"
+                            android:background="@drawable/nov_circle_red">
 
                             <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
+                                android:layout_width="26dp"
+                                android:layout_height="26dp"
+                                android:layout_gravity="center"
                                 android:src="@drawable/ic_warning"
-                                android:tint="#E53E3E"
-                                android:layout_marginEnd="12dp" />
+                                android:tint="#E53E3E" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="IMPORTANT NOTICE"
                                 android:textColor="#E53E3E"
-                                android:textSize="16sp"
-                                android:textStyle="bold" />
+                                android:textSize="17sp"
+                                android:textStyle="bold"
+                                android:layout_marginBottom="8dp" />
 
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="This device has been locked by Noxaryn Locker due to non-payment of EMI. To unlock this device, please complete your pending payment."
+                                android:textColor="#4A5568"
+                                android:textSize="14sp"
+                                android:lineSpacingExtra="3dp"
+                                android:layout_marginBottom="10dp" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="For assistance, contact our customer support team at the number given below."
+                                android:textColor="#4A5568"
+                                android:textSize="14sp"
+                                android:lineSpacingExtra="3dp" />
                         </LinearLayout>
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="Your device has been locked due to overdue EMI payment. Please contact your retailer to make the payment and unlock your device. Any attempt to tamper with, modify, or bypass this device is strictly prohibited and will result in legal action."
-                            android:textColor="#4A5568"
-                            android:textSize="14sp"
-                            android:lineSpacingExtra="4dp" />
-
                     </LinearLayout>
-
                 </androidx.cardview.widget.CardView>
 
-                <!-- Device Locked Title -->
-                <TextView
+                <!-- Center lock -->
+                <FrameLayout
+                    android:layout_width="78dp"
+                    android:layout_height="78dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginBottom="12dp"
+                    android:background="@drawable/nov_circle_red">
+
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_lock_large"
+                        android:tint="#E53E3E" />
+                </FrameLayout>
+
+                <!-- DEVICE LOCKED (two-tone) -->
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="DEVICE LOCKED"
-                    android:textColor="#FFFFFF"
-                    android:textSize="28sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.2"
-                    android:layout_marginBottom="32dp" />
+                    android:layout_gravity="center_horizontal"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="6dp">
 
-                <!-- User Details Card -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="DEVICE"
+                        android:layout_marginEnd="10dp"
+                        android:textColor="#0A1A3F"
+                        android:textSize="32sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.05" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="LOCKED"
+                        android:textColor="#E53E3E"
+                        android:textSize="32sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.05" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Please complete your pending payment to unlock this device and continue using it."
+                    android:textColor="#5B6B8C"
+                    android:textSize="14sp"
+                    android:gravity="center"
+                    android:lineSpacingExtra="3dp"
+                    android:layout_marginBottom="20dp" />
+
+                <!-- Details card -->
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="4dp"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="2dp"
                     app:cardBackgroundColor="#FFFFFF">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="24dp">
+                        android:padding="8dp">
 
-                        <!-- Customer Name -->
+                        <!-- Retailer Name -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
-                            android:layout_marginBottom="16dp">
+                            android:gravity="center_vertical"
+                            android:padding="12dp">
 
-                            <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:src="@drawable/ic_person"
-                                android:tint="#0C7DEA"
-                                android:layout_marginEnd="12dp" />
+                            <FrameLayout
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:layout_marginEnd="14dp"
+                                android:background="@drawable/nov_tile_bg"
+                                android:backgroundTint="#E8F0FE">
+
+                                <ImageView
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_person"
+                                    android:tint="#1E6BFF" />
+                            </FrameLayout>
 
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -152,8 +214,8 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:text="Retailer Name"
-                                    android:textColor="#666666"
-                                    android:textSize="12sp" />
+                                    android:textColor="#7A8AA8"
+                                    android:textSize="13sp" />
 
                                 <TextView
                                     android:id="@+id/user_name"
@@ -161,26 +223,36 @@
                                     android:layout_height="wrap_content"
                                     android:text="Loading..."
                                     android:textColor="#0A1A3F"
-                                    android:textSize="16sp"
+                                    android:textSize="17sp"
                                     android:textStyle="bold" />
-
                             </LinearLayout>
-
                         </LinearLayout>
 
-                        <!-- Phone Number -->
+                        <View android:layout_width="match_parent" android:layout_height="1dp"
+                            android:background="#EEF1F6" android:layout_marginStart="12dp" android:layout_marginEnd="12dp" />
+
+                        <!-- Contact Number -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
-                            android:layout_marginBottom="16dp">
+                            android:gravity="center_vertical"
+                            android:padding="12dp">
 
-                            <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:src="@drawable/ic_phone"
-                                android:tint="#0C7DEA"
-                                android:layout_marginEnd="12dp" />
+                            <FrameLayout
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:layout_marginEnd="14dp"
+                                android:background="@drawable/nov_tile_bg"
+                                android:backgroundTint="#E6F7EF">
+
+                                <ImageView
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_phone"
+                                    android:tint="#22B573" />
+                            </FrameLayout>
 
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -191,9 +263,9 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Phone Number"
-                                    android:textColor="#666666"
-                                    android:textSize="12sp" />
+                                    android:text="Contact Number"
+                                    android:textColor="#7A8AA8"
+                                    android:textSize="13sp" />
 
                                 <TextView
                                     android:id="@+id/user_phone"
@@ -201,25 +273,36 @@
                                     android:layout_height="wrap_content"
                                     android:text="Loading..."
                                     android:textColor="#0A1A3F"
-                                    android:textSize="16sp"
+                                    android:textSize="17sp"
                                     android:textStyle="bold" />
-
                             </LinearLayout>
-
                         </LinearLayout>
 
-                        <!-- Address -->
+                        <View android:layout_width="match_parent" android:layout_height="1dp"
+                            android:background="#EEF1F6" android:layout_marginStart="12dp" android:layout_marginEnd="12dp" />
+
+                        <!-- Location -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal">
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:padding="12dp">
 
-                            <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:src="@drawable/ic_location"
-                                android:tint="#0C7DEA"
-                                android:layout_marginEnd="12dp" />
+                            <FrameLayout
+                                android:layout_width="44dp"
+                                android:layout_height="44dp"
+                                android:layout_marginEnd="14dp"
+                                android:background="@drawable/nov_tile_bg"
+                                android:backgroundTint="#FFF1E6">
+
+                                <ImageView
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_location"
+                                    android:tint="#FF8A3D" />
+                            </FrameLayout>
 
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -230,9 +313,9 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Address"
-                                    android:textColor="#666666"
-                                    android:textSize="12sp" />
+                                    android:text="Location"
+                                    android:textColor="#7A8AA8"
+                                    android:textSize="13sp" />
 
                                 <TextView
                                     android:id="@+id/user_address"
@@ -240,93 +323,104 @@
                                     android:layout_height="wrap_content"
                                     android:text="Loading..."
                                     android:textColor="#0A1A3F"
-                                    android:textSize="16sp"
+                                    android:textSize="17sp"
                                     android:textStyle="bold" />
-
                             </LinearLayout>
-
                         </LinearLayout>
-
                     </LinearLayout>
-
                 </androidx.cardview.widget.CardView>
 
-                <!-- Payment Photo Card -->
+                <!-- Payment QR Code -->
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="4dp"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="2dp"
                     app:cardBackgroundColor="#FFFFFF">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="24dp">
+                        android:orientation="vertical">
 
+                        <!-- Blue header bar -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
-                            android:layout_marginBottom="16dp">
+                            android:gravity="center_vertical"
+                            android:background="@drawable/nov_qr_button_bg"
+                            android:padding="18dp">
 
-                            <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:src="@drawable/ic_payment"
-                                android:tint="#0C7DEA"
-                                android:layout_marginEnd="12dp" />
+                            <FrameLayout
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:layout_marginEnd="14dp"
+                                android:background="@drawable/nov_tile_bg"
+                                android:backgroundTint="#FFFFFF">
+
+                                <ImageView
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:layout_gravity="center"
+                                    android:src="@drawable/ic_qr_code"
+                                    android:tint="#1E6BFF" />
+                            </FrameLayout>
 
                             <TextView
-                                android:layout_width="wrap_content"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
+                                android:layout_weight="1"
                                 android:text="Payment QR Code"
-                                android:textColor="#0A1A3F"
-                                android:textSize="16sp"
+                                android:textColor="#FFFFFF"
+                                android:textSize="18sp"
                                 android:textStyle="bold" />
-
                         </LinearLayout>
 
-                        <ImageView
-                            android:id="@+id/payment_photo"
-                            android:layout_width="200dp"
-                            android:layout_height="200dp"
-                            android:layout_gravity="center"
-                            android:scaleType="centerCrop"
-                            android:background="#F5F5F5"
-                            android:visibility="gone" />
-
-                        <TextView
-                            android:id="@+id/payment_photo_placeholder"
+                        <!-- QR image / placeholder (always visible) -->
+                        <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="120dp"
-                            android:text="QR Code Loading..."
-                            android:textColor="#999999"
-                            android:textSize="14sp"
-                            android:gravity="center"
-                            android:background="#F5F5F5"
-                            android:layout_marginBottom="8dp" />
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:gravity="center_horizontal"
+                            android:padding="20dp">
 
+                            <ImageView
+                                android:id="@+id/payment_photo"
+                                android:layout_width="200dp"
+                                android:layout_height="200dp"
+                                android:scaleType="centerCrop"
+                                android:background="#F5F7FB"
+                                android:visibility="gone" />
+
+                            <TextView
+                                android:id="@+id/payment_photo_placeholder"
+                                android:layout_width="match_parent"
+                                android:layout_height="120dp"
+                                android:text="QR Code Loading..."
+                                android:textColor="#9AA6BF"
+                                android:textSize="14sp"
+                                android:gravity="center"
+                                android:background="#F5F7FB" />
+                        </LinearLayout>
                     </LinearLayout>
-
                 </androidx.cardview.widget.CardView>
 
-                <!-- PIN Unlock Card -->
+                <!-- PIN unlock -->
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="24dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="4dp"
+                    android:layout_marginBottom="20dp"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="2dp"
                     app:cardBackgroundColor="#FFFFFF">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="24dp">
+                        android:padding="20dp">
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -341,7 +435,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="Enter 6-digit unlock code:"
-                            android:textColor="#666666"
+                            android:textColor="#667085"
                             android:textSize="14sp"
                             android:layout_marginBottom="16dp" />
 
@@ -447,7 +541,6 @@
                                 android:focusable="true"
                                 android:focusableInTouchMode="true"
                                 android:clickable="true" />
-
                         </LinearLayout>
 
                         <Button
@@ -458,44 +551,36 @@
                             android:textColor="#FFFFFF"
                             android:textSize="16sp"
                             android:textStyle="bold"
-                            android:backgroundTint="#0C7DEA"
+                            android:backgroundTint="#1E6BFF"
                             android:stateListAnimator="@null" />
-
                     </LinearLayout>
-
                 </androidx.cardview.widget.CardView>
 
+                <!-- Footer -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center"
+                    android:layout_marginBottom="8dp">
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_lock_shield"
+                        android:tint="#7A8AA8"
+                        android:layout_marginEnd="8dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Secured by Noxaryn Locker"
+                        android:textColor="#7A8AA8"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
             </LinearLayout>
-
-        </ScrollView>
-
-        <!-- Bottom Status Bar -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="16dp"
-            android:gravity="center_vertical"
-            android:background="#010B29">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="🛡️ Novaryn Lock Device Security"
-                android:textColor="#6E86B8"
-                android:textSize="12sp"
-                android:gravity="center" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="v2.5"
-                android:textColor="#6E86B8"
-                android:textSize="10sp" />
-
         </LinearLayout>
-
-    </LinearLayout>
+    </ScrollView>
 
 </FrameLayout>
