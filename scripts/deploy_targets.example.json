@@ -23,6 +23,7 @@
     "aapanel_grp2":    { "method": "ftps", "host": "AAPANEL_GRP2_IP", "port": 21, "user": "FTP_USER", "password": "FTP_PASS" },
     "aapanel_grp3":    { "method": "ftps", "host": "AAPANEL_GRP3_IP", "port": 21, "user": "FTP_USER", "password": "FTP_PASS" },
     "cpanel_eplocker": { "method": "ftps", "host": "eplocker.com",    "port": 21, "user": "FTP_USER", "password": "FTP_PASS" },
+    "cpanel_jssdemo":  { "method": "ftps", "host": "emijssdemo.xyz",  "port": 21, "user": "FTP_USER", "password": "FTP_PASS" },
     "cpanel_emipay":   { "method": "ftps", "host": "emipay24.com",    "port": 21, "user": "FTP_USER", "password": "FTP_PASS" }
   },
 
@@ -43,6 +44,7 @@
     "shahjalalbd":    { "server": "aapanel_grp2", "local": "app-shahjalalbd-release.apk",    "remote_path": "shahjalalbd.org/apk/running-dpc.apk" },
 
     "novarynlock":    { "server": "aapanel_grp3", "local": "app-novarynlock-release.apk",    "remote_path": "novarynlock.com/apk/running-dpc.apk" },
+    "jssdemo":        { "server": "cpanel_jssdemo", "local": "app-jssdemo-release.apk",      "remote_path": "public_html/apk/running-dpc.apk" },
 
     "epLocker":       { "server": "cpanel_eplocker", "local": "app-eplocker-release.apk",    "remote_path": "public_html/apk/running-dpc.apk" },
     "emipay":         { "server": "cpanel_emipay",   "local": "app-emipay-release.apk",      "remote_path": "public_html/apk/running-dpc.apk" }

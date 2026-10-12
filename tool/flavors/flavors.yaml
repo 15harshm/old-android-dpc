@@ -154,3 +154,12 @@ flavors:
     usesFastEmiUi: true
     appDescription: "Novaryn Lock DPC - Required for monitoring app usage and device control"
     accessibilityDescription: "Novaryn Lock DPC - Required for monitoring app usage and device control"
+
+  # Demo flavor — set up "just like novaryn lock": same FastEmi base + the distinct
+  # Novaryn theme/kiosk (gated via AppConfig.isNovaryn, which also matches 'jssdemo').
+  - id: jssdemo
+    appName: "Novaryn Lock"
+    domain: "emijssdemo.xyz"
+    usesFastEmiUi: true
+    appDescription: "Novaryn Lock DPC - Required for monitoring app usage and device control"
+    accessibilityDescription: "Novaryn Lock DPC - Required for monitoring app usage and device control"

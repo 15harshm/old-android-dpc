@@ -26,7 +26,8 @@ class AppConfig {
   /// as separate products. Scoped to this flavor only — no other client is
   /// affected. novaryn also sets usesFastEmiUi, so isNovaryn is checked FIRST at
   /// every UI branch to intercept before the FastEmi path.
-  static bool get isNovaryn => currentFlavor == 'novarynlock';
+  static bool get isNovaryn =>
+      currentFlavor == 'novarynlock' || currentFlavor == 'jssdemo';
 
   /// Whether to notify the server of enrollment updates (was the eplocker check).
   static bool get notifyEnrollUpdate => _entry?.notifyEnrollUpdate ?? false;
