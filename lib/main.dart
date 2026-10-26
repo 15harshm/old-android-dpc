@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -49,6 +50,13 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   // Opt #10: Cache setup completion in-memory so didChangeAppLifecycleState
   // never needs to touch SharedPreferences (async disk read) on every resume.
   bool _setupCompleted = false;
+  // Device-info self-heal: a low-frequency retry that keeps trying until the
+  // retailer's entry is fetched, plus a guard so overlapping triggers (resume +
+  // timer) don't run concurrent fetches. Fixes the intermittent "stuck on Loading"
+  // where a single failed first fetch (post-enroll backend race / transient timeout)
+  // used to leave the home screen on "Loading..." forever with no retry.
+  Timer? _deviceInfoRetryTimer;
+  bool _isFetchingDeviceInfo = false;
   final TextEditingController _imei1Controller = TextEditingController();
   final TextEditingController _imei2Controller = TextEditingController();
 
@@ -258,52 +266,112 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   Future<void> _loadDeviceInfo() async {
     if (_showImeiInput) return;
+    // Guard against overlapping fetches (resume + retry timer + enroll can all call this).
+    if (_isFetchingDeviceInfo) return;
+    _isFetchingDeviceInfo = true;
 
-    setState(() {
-      isLoadingDeviceInfo = true;
-    });
+    if (mounted && deviceInfo == null) {
+      setState(() {
+        isLoadingDeviceInfo = true;
+      });
+    }
 
     try {
       final savedImei = await ImeiService.getSavedImei();
+      if (savedImei == null) {
+        // Can't query without an IMEI; the background retry will try again shortly.
+        _scheduleDeviceInfoRetry();
+        return;
+      }
 
-      if (savedImei != null) {
+      // Retry a few times with backoff within this single invocation. This absorbs the
+      // two common intermittent failures right after enrollment:
+      //  - the retailer's backend row not yet queryable by this IMEI (propagation lag), and
+      //  - one slow/timed-out response while the radio/CPU are busy post-enroll.
+      Map<String, dynamic>? loaded;
+      String retailerPhone = '';
+      const backoffs = [
+        Duration(seconds: 2),
+        Duration(seconds: 4),
+        Duration(seconds: 8),
+      ];
+      for (int attempt = 0; attempt <= backoffs.length; attempt++) {
         final info = await PolicyApiService.fetchDeviceInfoWithDeviceImei(
           imei1: savedImei['imei1'],
           imei2: savedImei['imei2'],
         );
-
         if (info != null) {
-          setState(() {
-            deviceInfo = {
-              'customerName': info.customer.customerName,
-              'retailerName': info.user.userName,
-              'retailerPhone': info.user.phone,
-              'deviceModel': '${info.customer.brand} ${info.customer.model}',
-              'totalEmi': info.emiSummary.totalEmi.toString(),
-              'pendingEmi': int.tryParse(info.emiSummary.pendingEmi) ?? 0,
-            };
-            isLoadingDeviceInfo = false;
-
-            // 🚀 SYNC: Save retailer phone to native authorized store for offline locking
-            if (info.user.phone.isNotEmpty) {
-              const platform = MethodChannel('com.renew.jss/admin');
-              platform.invokeMethod('saveRetailerPhone', {
-                'phone': info.user.phone,
-              });
-              print(
-                'RunningDPC: Syncing retailer phone with native store: ${info.user.phone}',
-              );
-            }
-          });
-          print('RunningDPC: Device info loaded successfully');
+          retailerPhone = info.user.phone;
+          loaded = {
+            'customerName': info.customer.customerName,
+            'retailerName': info.user.userName,
+            'retailerPhone': info.user.phone,
+            'deviceModel': '${info.customer.brand} ${info.customer.model}',
+            'totalEmi': info.emiSummary.totalEmi.toString(),
+            'pendingEmi': int.tryParse(info.emiSummary.pendingEmi) ?? 0,
+          };
+          break;
+        }
+        if (attempt < backoffs.length) {
+          await Future.delayed(backoffs[attempt]);
         }
       }
+
+      if (loaded != null) {
+        _deviceInfoRetryTimer?.cancel();
+        _deviceInfoRetryTimer = null;
+        if (mounted) {
+          setState(() {
+            deviceInfo = loaded;
+            isLoadingDeviceInfo = false;
+          });
+        }
+        // 🚀 SYNC: Save retailer phone to native authorized store for offline locking.
+        if (retailerPhone.isNotEmpty) {
+          const platform = MethodChannel('com.renew.jss/admin');
+          platform.invokeMethod('saveRetailerPhone', {'phone': retailerPhone});
+          print('RunningDPC: Syncing retailer phone with native store: $retailerPhone');
+        }
+        print('RunningDPC: Device info loaded successfully');
+      } else {
+        // Still nothing after retries — keep a low-frequency background retry so the
+        // screen self-heals without a manual app restart (resume also re-fetches).
+        if (mounted) {
+          setState(() {
+            isLoadingDeviceInfo = false;
+          });
+        }
+        _scheduleDeviceInfoRetry();
+        print('RunningDPC: Device info not available yet — scheduled background retry');
+      }
     } catch (e) {
-      setState(() {
-        isLoadingDeviceInfo = false;
-      });
+      if (mounted) {
+        setState(() {
+          isLoadingDeviceInfo = false;
+        });
+      }
+      _scheduleDeviceInfoRetry();
       print('RunningDPC: Device info fetch error: $e');
+    } finally {
+      _isFetchingDeviceInfo = false;
     }
+  }
+
+  /// Keep retrying the device-info fetch in the background until it succeeds, then
+  /// stop. Guarantees the home screen recovers on its own (no app restart needed)
+  /// after a transient failure of the first post-enrollment fetch.
+  void _scheduleDeviceInfoRetry() {
+    if (deviceInfo != null) return;
+    if (_deviceInfoRetryTimer?.isActive ?? false) return;
+    _deviceInfoRetryTimer =
+        Timer.periodic(const Duration(seconds: 30), (timer) {
+      if (deviceInfo != null || _showImeiInput || _showPermissionSetup) {
+        timer.cancel();
+        _deviceInfoRetryTimer = null;
+        return;
+      }
+      _loadDeviceInfo();
+    });
   }
 
   Future<void> _removeAllRestrictions() async {
@@ -366,6 +434,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    _deviceInfoRetryTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -382,6 +451,13 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
       // Opt #10: Use cached bool — no async SharedPreferences read on every resume.
       if (!_setupCompleted) {
         _checkImeiSetup();
+      } else if (deviceInfo == null &&
+          !_showImeiInput &&
+          !_showPermissionSetup) {
+        // Setup is done but device info never loaded (stuck-on-loading case).
+        // Re-fetch on resume so reopening the app self-heals it.
+        print('RunningDPC: Resumed with no device info — re-fetching');
+        _loadDeviceInfo();
       } else {
         print('RunningDPC: Setup already completed — skipping full re-check on resume');
       }

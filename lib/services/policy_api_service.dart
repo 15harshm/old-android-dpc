@@ -461,7 +461,21 @@ class PolicyApiService {
         print('🎯 Using IMEI for device info fetch: $imei');
       }
 
-      final deviceInfo = await fetchDeviceInfo(imei);
+      var deviceInfo = await fetchDeviceInfo(imei);
+
+      // Fallback: if IMEI1 didn't match a backend entry, try IMEI2. On some dual-SIM
+      // devices the slot the customer entered as "IMEI 1" is what the backend stored
+      // as imei2 — without this, those devices could never fetch their details and the
+      // home screen stayed stuck on "Loading...".
+      if (deviceInfo == null &&
+          imei2 != null &&
+          imei2.isNotEmpty &&
+          imei2 != imei) {
+        if (kDebugMode) {
+          print('📱 IMEI1 miss — retrying device info with IMEI2: $imei2');
+        }
+        deviceInfo = await fetchDeviceInfo(imei2);
+      }
 
       if (kDebugMode) {
         if (deviceInfo != null) {

@@ -88,33 +88,34 @@ class PolicyChangeProcessor private constructor(private val context: Context) {
         try {
             Log.d(TAG, "FCMPC 🔄 Processing policy payload (Command ID: $commandId)")
             
-            // 🎯 FIX: Better duplicate detection with timestamp
+            // 🎯 DEDUP — FIXED 2026-10-26. The old code applied a blanket 5s
+            // "minProcessInterval" throttle that silently dropped ANY command arriving
+            // within 5s of the previous one — including a legitimate OPPOSITE command
+            // (e.g. UNLOCK sent a split-second after LOCK). That is exactly why a rapid
+            // unlock "vanished" and only worked when re-sent after 5s.
+            //
+            // We now drop ONLY a genuine duplicate re-delivery: the SAME payload AND the
+            // SAME commandId seen again within a short window (FCM can redeliver the same
+            // push). DISTINCT commands (lock vs unlock, or any different commandId/value)
+            // produce a different hash and ALWAYS process immediately — no time gate.
             val currentTime = System.currentTimeMillis()
             val lastProcessTime = prefs.getLong(KEY_LAST_PROCESS_TIME, 0)
-            val minProcessInterval = 5000 // 5 seconds minimum between processes
-            
-            // Check if we recently processed the same command
-            if (currentTime - lastProcessTime < minProcessInterval) {
-                Log.w(TAG, "FCMPC ⏭️ Throttling duplicate process - too soon (${currentTime - lastProcessTime}ms ago)")
-                return
-            }
-            
-            // Save current process time
-            prefs.edit().putLong(KEY_LAST_PROCESS_TIME, currentTime).apply()
-            
-            // Prevent duplicate payload re-processing
-            // 🎯 FIX: Include commandId in hash to allow re-sending same payload with new ID
             val payloadHash = (payload.toString() + commandId).hashCode()
             val lastHash = prefs.getInt(KEY_LAST_PAYLOAD_HASH, 0)
-            
-            if (payloadHash == lastHash && commandId != "0") {
-                Log.w(TAG, "FCMPC ⏭️ Duplicate payload with same ID detected (hash: $payloadHash), skipping")
+
+            val isDuplicateRedelivery =
+                payloadHash == lastHash && (currentTime - lastProcessTime) < 3000
+            if (isDuplicateRedelivery) {
+                Log.w(TAG, "FCMPC ⏭️ Duplicate re-delivery within 3s (hash=$payloadHash) - skipping")
                 return
             }
-            
-            // Save current payload hash
-            prefs.edit().putInt(KEY_LAST_PAYLOAD_HASH, payloadHash).apply()
-            Log.d(TAG, "FCMPC 🆔 New payload hash: $payloadHash")
+
+            // Record this command as the most recent (baseline for the dedup check above).
+            prefs.edit()
+                .putLong(KEY_LAST_PROCESS_TIME, currentTime)
+                .putInt(KEY_LAST_PAYLOAD_HASH, payloadHash)
+                .apply()
+            Log.d(TAG, "FCMPC 🆔 Processing payload hash=$payloadHash (Command ID: $commandId)")
             
             // Clear stale applied policies to prevent accumulation
             actuallyAppliedPolicies.clear()
