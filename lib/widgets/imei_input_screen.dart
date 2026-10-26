@@ -156,7 +156,7 @@ class ImeiInputScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'Register this device to activate Novaryn Lock protection.',
+                          'Register this device to activate ${AppConfig.appName} protection.',
                           style: NV.font(
                               size: 13.5,
                               color: Colors.white.withValues(alpha: 0.82),
@@ -228,7 +228,7 @@ class ImeiInputScreen extends StatelessWidget {
                       Icon(Icons.shield_rounded,
                           size: 15, color: NV.textLight),
                       const SizedBox(width: 6),
-                      Text('Secured by Novaryn Lock',
+                      Text('Secured by ${AppConfig.appName}',
                           style:
                               NV.font(size: 12, color: NV.textLight)),
                     ],

@@ -1,6 +1,29 @@
 import 'package:flutter/material.dart';
 
+import '../config/app_config.dart';
 import '../config/novaryn_theme.dart';
+
+// Per-flavor brand for the shared Novaryn-style UI. novarynlock keeps the Novaryn
+// wordmark + mark image; jssdemo overrides to its own "EMI JSS" brand (no mark
+// image → the glyph fallback is used). Any other flavor using this UI defaults to
+// Novaryn.
+class _NvBrand {
+  final String line1;
+  final String line2;
+  final String tagline;
+  final String? markAsset;
+  const _NvBrand(this.line1, this.line2, this.tagline, {this.markAsset});
+}
+
+_NvBrand _nvBrand() {
+  switch (AppConfig.currentFlavor) {
+    case 'jssdemo':
+      return const _NvBrand('RS', 'Locker', 'LOCK  •  PROTECT  •  CONTROL');
+    default:
+      return const _NvBrand('Novaryn', 'Lock', 'LOCK  •  PROTECT  •  CONTROL',
+          markAsset: 'assets/novaryn_mark.png');
+  }
+}
 
 // ═════════════════════════════════════════════════════════════════════════════
 //  Novaryn Lock — shared UI building blocks (customer DPC app, novaryn flavor).
@@ -115,12 +138,13 @@ class NvWordmark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brand = _nvBrand();
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Novaryn',
+          brand.line1,
           style: NV.font(
             size: size,
             weight: FontWeight.w700,
@@ -134,7 +158,7 @@ class NvWordmark extends StatelessWidget {
             colors: [NV.cyan300, NV.cyan, NV.blue400],
           ).createShader(r),
           child: Text(
-            'Lock',
+            brand.line2,
             style: NV.font(
               size: size * 0.86,
               weight: FontWeight.w700,
@@ -146,7 +170,7 @@ class NvWordmark extends StatelessWidget {
         if (showTagline) ...[
           SizedBox(height: size * 0.12),
           Text(
-            'LOCK  •  PROTECT  •  CONTROL',
+            brand.tagline,
             style: NV.font(
               size: (size * 0.30).clamp(7, 12).toDouble(),
               weight: FontWeight.w500,
@@ -175,24 +199,29 @@ class NvBrandLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final markAsset = _nvBrand().markAsset;
+    Widget glyphMark() => Container(
+          width: markHeight,
+          height: markHeight,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.white.withValues(alpha: 0.12),
+            border: Border.all(color: NV.cyan300.withValues(alpha: 0.6)),
+          ),
+          child: Icon(Icons.lock_rounded,
+              color: NV.cyan300, size: markHeight * 0.52),
+        );
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Image.asset(
-          'assets/novaryn_mark.png',
-          height: markHeight,
-          errorBuilder: (_, __, ___) => Container(
-            width: markHeight,
+        if (markAsset != null)
+          Image.asset(
+            markAsset,
             height: markHeight,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.12),
-              border: Border.all(color: NV.cyan300.withValues(alpha: 0.6)),
-            ),
-            child: Icon(Icons.lock_rounded,
-                color: NV.cyan300, size: markHeight * 0.52),
-          ),
-        ),
+            errorBuilder: (_, __, ___) => glyphMark(),
+          )
+        else
+          glyphMark(),
         const SizedBox(width: 8),
         NvWordmark(size: wordSize, showTagline: showTagline),
       ],

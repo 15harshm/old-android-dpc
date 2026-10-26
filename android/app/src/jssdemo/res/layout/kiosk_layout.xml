@@ -29,14 +29,22 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Hero banner -->
-            <ImageView
+            <!-- Brand logo header (RS Locker) -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:adjustViewBounds="true"
-                android:scaleType="fitCenter"
-                android:src="@drawable/noxaryn_hero"
-                android:contentDescription="Noxaryn Locker" />
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:paddingTop="40dp"
+                android:paddingBottom="6dp">
+
+                <ImageView
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/jss_logo"
+                    android:contentDescription="RS Locker" />
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -45,8 +53,7 @@
                 android:paddingLeft="20dp"
                 android:paddingRight="20dp"
                 android:paddingBottom="20dp"
-                android:paddingTop="20dp"
-                android:layout_marginTop="-46dp">
+                android:paddingTop="8dp">
 
                 <!-- IMPORTANT NOTICE (overlaps the hero's lower edge) -->
                 <androidx.cardview.widget.CardView
@@ -95,7 +102,7 @@
                             <TextView
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="This device has been locked by Noxaryn Locker due to non-payment of EMI. To unlock this device, please complete your pending payment."
+                                android:text="This device has been locked by RS Locker due to non-payment of EMI. To unlock this device, please complete your pending payment."
                                 android:textColor="#4A5568"
                                 android:textSize="14sp"
                                 android:lineSpacingExtra="3dp"
@@ -574,7 +581,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Secured by Noxaryn Locker"
+                        android:text="Secured by RS Locker"
                         android:textColor="#7A8AA8"
                         android:textSize="12sp" />
                 </LinearLayout>

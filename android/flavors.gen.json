@@ -163,11 +163,11 @@
   },
   {
     "id": "jssdemo",
-    "appName": "Novaryn Lock",
+    "appName": "RS Locker",
     "domain": "emijssdemo.xyz",
     "apiBase": "https://emijssdemo.xyz/api2",
     "socketBase": "https://socket.emijssdemo.xyz",
-    "appDescription": "Novaryn Lock DPC - Required for monitoring app usage and device control",
-    "accessibilityDescription": "Novaryn Lock DPC - Required for monitoring app usage and device control"
+    "appDescription": "RS Locker - Required for monitoring app usage and device control",
+    "accessibilityDescription": "RS Locker - Required for monitoring app usage and device control"
   }
 ]
