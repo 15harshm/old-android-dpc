@@ -30,7 +30,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="DEVICE PROTECTED BY PAYKIST"
+                android:text="DEVICE PROTECTED BY PRIME LOCKER PRO"
                 android:textColor="#FFFFFF"
                 android:textSize="12sp"
                 android:textStyle="bold"
@@ -501,7 +501,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="🛡️ Paykist Device Security"
+                android:text="🛡️ Prime Locker Pro Device Security"
                 android:textColor="#FFFFFF"
                 android:textSize="12sp"
                 android:gravity="center" />
