@@ -164,3 +164,12 @@ flavors:
     usesFastEmiUi: true
     appDescription: "RS Locker - Required for monitoring app usage and device control"
     accessibilityDescription: "RS Locker - Required for monitoring app usage and device control"
+
+  # Prime Locker Pro client (id kept as 'renewjss', domain apirenewjss.com).
+  # Standard FastEmi UI, ₹. On aaPanel grp3 (103.160.144.102) with novaryn/easyemi.
+  - id: renewjss
+    appName: "Prime Locker Pro"
+    domain: "apirenewjss.com"
+    usesFastEmiUi: true
+    appDescription: "Prime Locker Pro - Required for monitoring app usage and device control"
+    accessibilityDescription: "Prime Locker Pro - Required for monitoring app usage and device control"

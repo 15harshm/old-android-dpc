@@ -44,6 +44,7 @@
     "shahjalalbd":    { "server": "aapanel_grp2", "local": "app-shahjalalbd-release.apk",    "remote_path": "shahjalalbd.org/apk/running-dpc.apk" },
 
     "novarynlock":    { "server": "aapanel_grp3", "local": "app-novarynlock-release.apk",    "remote_path": "novarynlock.com/apk/running-dpc.apk" },
+    "renewjss":       { "server": "aapanel_grp3", "local": "app-renewjss-release.apk",       "remote_path": "apirenewjss.com/apk/running-dpc.apk" },
     "jssdemo":        { "server": "cpanel_jssdemo", "local": "app-jssdemo-release.apk",      "remote_path": "public_html/apk/running-dpc.apk" },
 
     "epLocker":       { "server": "aapanel_grp2", "local": "app-eplocker-release.apk",       "remote_path": "eplocker.com/apk/running-dpc.apk" },

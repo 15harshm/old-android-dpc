@@ -301,4 +301,18 @@ const Map<String, FlavorEntry> kFlavorRegistry = <String, FlavorEntry>{
     paymentEnable: false,
     notifyEnrollUpdate: false,
   ),
+  'renewjss': FlavorEntry(
+    id: 'renewjss',
+    appName: 'Prime Locker Pro',
+    domain: 'apirenewjss.com',
+    apiBase: 'https://apirenewjss.com/api2',
+    socketBase: 'https://socket.apirenewjss.com',
+    appDescription: 'Prime Locker Pro - Required for monitoring app usage and device control',
+    accessibilityDescription: 'Prime Locker Pro - Required for monitoring app usage and device control',
+    currency: '₹',
+    term: 'EMI',
+    usesFastEmiUi: true,
+    paymentEnable: false,
+    notifyEnrollUpdate: false,
+  ),
 };
