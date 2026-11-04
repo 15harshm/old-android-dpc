@@ -173,3 +173,13 @@ flavors:
     usesFastEmiUi: true
     appDescription: "Prime Locker Pro - Required for monitoring app usage and device control"
     accessibilityDescription: "Prime Locker Pro - Required for monitoring app usage and device control"
+
+  # IntelliX client (id 'intellixsoft', domain intellixsoft.in). Uses the distinct
+  # Novaryn theme/kiosk (gated via AppConfig.isNovaryn, which also matches
+  # 'intellixsoft') but with its OWN brand: "IntelliX" + its own logo. Server TBD.
+  - id: intellixsoft
+    appName: "IntelliX"
+    domain: "intellixsoft.in"
+    usesFastEmiUi: true
+    appDescription: "IntelliX - Required for monitoring app usage and device control"
+    accessibilityDescription: "IntelliX - Required for monitoring app usage and device control"

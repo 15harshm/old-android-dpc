@@ -19,6 +19,9 @@ _NvBrand _nvBrand() {
   switch (AppConfig.currentFlavor) {
     case 'jssdemo':
       return const _NvBrand('RS', 'Locker', 'LOCK  •  PROTECT  •  CONTROL');
+    case 'intellixsoft':
+      // Logo-faithful split: navy "Intelli" + cyan "X"; tagline matches the mark.
+      return const _NvBrand('Intelli', 'X', 'MOBILE  •  EMI  •  LOCKER');
     default:
       return const _NvBrand('Novaryn', 'Lock', 'LOCK  •  PROTECT  •  CONTROL',
           markAsset: 'assets/novaryn_mark.png');

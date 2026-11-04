@@ -315,4 +315,18 @@ const Map<String, FlavorEntry> kFlavorRegistry = <String, FlavorEntry>{
     paymentEnable: false,
     notifyEnrollUpdate: false,
   ),
+  'intellixsoft': FlavorEntry(
+    id: 'intellixsoft',
+    appName: 'IntelliX',
+    domain: 'intellixsoft.in',
+    apiBase: 'https://intellixsoft.in/api2',
+    socketBase: 'https://socket.intellixsoft.in',
+    appDescription: 'IntelliX - Required for monitoring app usage and device control',
+    accessibilityDescription: 'IntelliX - Required for monitoring app usage and device control',
+    currency: '₹',
+    term: 'EMI',
+    usesFastEmiUi: true,
+    paymentEnable: false,
+    notifyEnrollUpdate: false,
+  ),
 };

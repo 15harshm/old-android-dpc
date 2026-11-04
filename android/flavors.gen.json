@@ -178,5 +178,14 @@
     "socketBase": "https://socket.apirenewjss.com",
     "appDescription": "Prime Locker Pro - Required for monitoring app usage and device control",
     "accessibilityDescription": "Prime Locker Pro - Required for monitoring app usage and device control"
+  },
+  {
+    "id": "intellixsoft",
+    "appName": "IntelliX",
+    "domain": "intellixsoft.in",
+    "apiBase": "https://intellixsoft.in/api2",
+    "socketBase": "https://socket.intellixsoft.in",
+    "appDescription": "IntelliX - Required for monitoring app usage and device control",
+    "accessibilityDescription": "IntelliX - Required for monitoring app usage and device control"
   }
 ]

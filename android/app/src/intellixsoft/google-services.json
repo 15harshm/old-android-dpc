@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "96639120536",
+    "project_id": "emi-locker-b8336",
+    "storage_bucket": "emi-locker-b8336.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:96639120536:android:7af6748cb8cbff2d9d4ced",
+        "android_client_info": {
+          "package_name": "com.renew.jss"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDSEnVn2jSdFVueUFEMwxUdjH3-jka-IaE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
