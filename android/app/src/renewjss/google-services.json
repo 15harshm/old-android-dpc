@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "348330076788",
-    "project_id": "paykist-24b17",
-    "storage_bucket": "paykist-24b17.firebasestorage.app"
+    "project_number": "437216236582",
+    "project_id": "primelocker-2026",
+    "storage_bucket": "primelocker-2026.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:348330076788:android:088c3cbc1e5f020c767f21",
+        "mobilesdk_app_id": "1:437216236582:android:152ddefccde3b47f6302e7",
         "android_client_info": {
           "package_name": "com.renew.jss"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDB2yEELdmdUQeNL7A9HgJzRLxoUbQuc4A"
+          "current_key": "AIzaSyB665c3sNtSm0y3Ypc8DqXseMU7pmeDUVk"
         }
       ],
       "services": {
